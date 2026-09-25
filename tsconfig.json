@@ -8,10 +8,10 @@
   ],
   "compilerOptions": {
     "paths": {
-      "discourse/plugins/discourse-ballotage/*": [
+      "discourse/plugins/discourse-ballotage-nautas/*": [
         "./assets/javascripts/*"
       ],
-      "discourse/plugins/discourse-ballotage/admin/*": [
+      "discourse/plugins/discourse-ballotage-nautas/admin/*": [
         "./admin/assets/javascripts/admin/*"
       ],
       "admin/*": ["./node_modules/discourse/declarations/admin/*"],

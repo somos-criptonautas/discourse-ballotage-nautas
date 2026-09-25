@@ -1,11 +1,10 @@
 # frozen_string_literal: true
 
-# name: discourse-ballotage
+# name: discourse-ballotage-nautas
 # about: Secret black/white-ball ballots (ballotage) for a member group, with participation oversight
 # version: 1.0.0
-# authors: DaniW42
-# url: https://github.com/DaniW42/discourse-ballotage
-# meta_topic_id: 413266
+# authors: Criptonautas (fork of DaniW42/discourse-ballotage)
+# url: https://github.com/somos-criptonautas/discourse-ballotage-nautas
 # required_version: 2026.7.0
 
 enabled_site_setting :ballotage_enabled
@@ -15,7 +14,7 @@ register_asset "stylesheets/ballotage.scss"
 %w[calendar-days check circle-info clock lock trash-can].each { |i| register_svg_icon i }
 
 module ::Ballotage
-  PLUGIN_NAME = "discourse-ballotage"
+  PLUGIN_NAME = "discourse-ballotage-nautas"
 end
 
 require_relative "lib/ballotage/engine"

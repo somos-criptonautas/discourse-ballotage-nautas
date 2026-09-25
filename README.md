@@ -1,9 +1,26 @@
-# discourse-ballotage
+# discourse-ballotage-nautas
 
-[![Discourse Plugin](https://github.com/DaniW42/discourse-ballotage/actions/workflows/discourse-plugin.yml/badge.svg)](https://github.com/DaniW42/discourse-ballotage/actions/workflows/discourse-plugin.yml)
+[![Discourse Plugin](https://github.com/somos-criptonautas/discourse-ballotage-nautas/actions/workflows/discourse-plugin.yml/badge.svg)](https://github.com/somos-criptonautas/discourse-ballotage-nautas/actions/workflows/discourse-plugin.yml)
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
 [![Discourse 2026.7+](https://img.shields.io/badge/Discourse-2026.7%2B-blue?logo=discourse)](https://www.discourse.org/)
-[![Meta topic](https://img.shields.io/badge/Meta-discussion-orange?logo=discourse)](https://meta.discourse.org/t/ballotage-secret-black-white-ball-ballots/413266)
+
+> **This is a fork** of [DaniW42/discourse-ballotage](https://github.com/DaniW42/discourse-ballotage)
+> by DaniW42, maintained by [Criptonautas](https://github.com/somos-criptonautas). All credit
+> for the original design and implementation goes to them — see the upstream
+> [Meta topic](https://meta.discourse.org/t/ballotage-secret-black-white-ball-ballots/413266).
+> Please report issues with this fork here, not upstream.
+
+## Differences from upstream
+
+Forked from upstream `v1.0.0-2-g753691d`. Kept up to date with every change in this fork:
+
+- **Plugin name** is `discourse-ballotage-nautas` (install path, `PLUGIN_NAME`, JS module
+  paths). Settings, tables and routes are unchanged, so data is compatible with upstream.
+- **Input validation:** `POST /ballotage/vote` returns 400 (not 500) for a non-scalar
+  `ballot_id`/`choice`; ballot creation returns 400 for impossible dates or times
+  (e.g. `2026-13-01`, `2026-02-31`, `24:00`) instead of a 500 or a silently shifted date.
+- **Deleted users:** their participation rows are kept, and `voter_count` counts rows,
+  so "votes cast" always equals black + white (see *Secrecy model*).
 
 A [Discourse](https://www.discourse.org/) plugin for **secret black/white-ball ballots**
 ("ballotage" — in German "Kugelung"), as used by clubs, societies and other membership
@@ -103,7 +120,7 @@ hooks:
     - exec:
         cd: $home/plugins
         cmd:
-          - git clone https://github.com/DaniW42/discourse-ballotage.git
+          - git clone https://github.com/somos-criptonautas/discourse-ballotage-nautas.git
 ```
 
 ```bash
@@ -142,14 +159,14 @@ There is a spec suite under `spec/` (models, requests, lib). Run it from inside 
 Discourse checkout with this plugin in `plugins/`:
 
 ```bash
-bundle exec rspec plugins/discourse-ballotage/spec
+bundle exec rspec plugins/discourse-ballotage-nautas/spec
 ```
 
 Linting uses the standard Discourse plugin configuration (ESLint, Prettier,
 Stylelint, RuboCop, Syntax Tree), run from the Discourse checkout:
 
 ```bash
-bin/lint plugins/discourse-ballotage
+bin/lint plugins/discourse-ballotage-nautas
 ```
 
 CI runs specs and linters on every push to `main` and on pull requests.
@@ -161,13 +178,14 @@ later.
 
 ## License
 
-GPL-3.0. See [LICENSE](LICENSE).
+GPL-3.0. See [LICENSE](LICENSE). Original work © DaniW42; fork modifications © Criptonautas.
 
 ---
 
 ## Deutsch
 
-**discourse-ballotage** ist ein Discourse-Plugin für geheime Kugelungen (Abstimmungen mit
+**discourse-ballotage-nautas** (ein Fork von
+[DaniW42/discourse-ballotage](https://github.com/DaniW42/discourse-ballotage)) ist ein Discourse-Plugin für geheime Kugelungen (Abstimmungen mit
 schwarzen/weissen Kugeln), wie sie z. B. Vereine, Gesellschaften und andere
 Mitgliedsorganisationen zur Aufnahme neuer Mitglieder einsetzen. Jedes stimmberechtigte
 Mitglied gibt genau eine Stimme (Schwarz oder Weiss) ab; dass es abgestimmt hat, wird
