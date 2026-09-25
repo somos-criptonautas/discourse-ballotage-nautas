@@ -113,6 +113,17 @@ RSpec.describe Ballotage::BallotsController do
       expect(ballot.reload.black_count).to eq(1)
     end
 
+    it "returns 400, not 500, for a non-scalar ballot_id" do
+      freeze_time
+      ballot = create_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+      sign_in(voter)
+
+      post "/ballotage/vote.json", params: { ballot_id: [ballot.id], choice: "black" }
+
+      expect(response.status).to eq(400)
+      expect(ballot.reload.black_count).to eq(0)
+    end
+
     it "rejects a second vote with 422" do
       freeze_time
       ballot = create_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
@@ -220,6 +231,23 @@ RSpec.describe Ballotage::BallotsController do
       voters.each { |v| expect(v.keys).to match_array(%w[id username name]) }
     end
 
+    it "keeps a deleted user's participation in voter_count so it matches the tally" do
+      freeze_time
+      ballot = create_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+      ballot.cast_vote!(voter, "black")
+      ballot.cast_vote!(other_voter, "white")
+      UserDestroyer.new(Discourse.system_user).destroy(other_voter)
+      freeze_time 2.hours.from_now
+      sign_in(admin)
+
+      get "/ballotage/ballots.json"
+
+      json = response.parsed_body["ballots"].first
+      expect(json["voter_count"]).to eq(2)
+      expect(json["voters"].map { |v| v["id"] }).to eq([voter.id])
+      expect(json["black_count"] + json["white_count"]).to eq(2)
+    end
+
     it "omits voters, voter_count and counts for a finalized ballot" do
       freeze_time
       ballot = create_ballot(starts_at: 2.hours.ago, ends_at: 1.hour.ago)
@@ -303,6 +331,38 @@ RSpec.describe Ballotage::BallotsController do
       expect(ballot.ends_at).to eq_time(
         ActiveSupport::TimeZone["Europe/Berlin"].parse("#{end_date} 18:15"),
       )
+    end
+
+    %w[2026-13-01 2026-00-01 2026-01-00 2026-02-31].each do |bad_date|
+      it "returns 400 and creates nothing for the impossible date #{bad_date}" do
+        freeze_time Time.utc(2026, 1, 1)
+        sign_in(admin)
+
+        post "/ballotage/ballots.json",
+             params: {
+               title: "Bad",
+               start_date: bad_date,
+               end_date: "2026-12-31",
+             }
+
+        expect(response.status).to eq(400)
+        expect(Ballotage::Ballot.count).to eq(0)
+      end
+    end
+
+    it "returns 400 for an impossible time" do
+      freeze_time
+      sign_in(admin)
+
+      post "/ballotage/ballots.json",
+           params: {
+             title: "Bad",
+             start_date: start_date,
+             end_date: end_date,
+             end_time: "24:00",
+           }
+
+      expect(response.status).to eq(400)
     end
 
     it "returns 422 when a ballot is already scheduled or open" do

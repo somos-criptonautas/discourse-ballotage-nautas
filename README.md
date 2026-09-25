@@ -51,6 +51,9 @@ The database is deliberately structured so that nothing in it links a member to 
   counts. Showing both at the same time would let an observer match a new name appearing
   on the list to whichever counter just moved. Once the ballot is over no further votes
   can arrive, so the final counts are shown.
+- **Deleted users.** If a member who voted is deleted, their participation row is kept so
+  "votes cast" keeps matching the black/white tally; they just drop off the voter list.
+  Finalizing removes those rows like all others.
 - **Finalizing is irreversible.** It deletes the participation rows and zeroes the
   counters, keeping only the ballot's title, period and status (ended/cancelled). There is
   no undo.

@@ -42,11 +42,11 @@ module Ballotage
     def vote
       raise Discourse::InvalidAccess unless guardian.can_vote_in_ballotage?
 
-      ballot = Ballot.find(params.require(:ballot_id))
+      ballot = Ballot.find(params.expect(:ballot_id))
       return render_json_error(I18n.t("ballotage.errors.not_open"), status: 422) unless ballot.open?
 
       begin
-        ballot.cast_vote!(current_user, params.require(:choice).to_s)
+        ballot.cast_vote!(current_user, params.expect(:choice).to_s)
       rescue Ballot::AlreadyVoted
         return render_json_error(I18n.t("ballotage.errors.already_voted"), status: 422)
       end
@@ -91,7 +91,7 @@ module Ballotage
 
         ballot =
           Ballot.create!(
-            title: params.require(:title),
+            title: params.expect(:title),
             starts_at: starts_at,
             ends_at: ends_at,
             created_by_id: current_user.id,
@@ -167,8 +167,10 @@ module Ballotage
       # Participation is visible while the ballot runs; black/white only once it
       # is over. Showing both live would let someone match a new name on the
       # list to the counter that just moved.
+      # Rows of deleted users are kept (see README), so count rows rather than
+      # surviving users: voter_count always equals black_count + white_count.
       voters = ballot.participations.map(&:user).compact.sort_by { |u| u.username_lower }
-      json[:voter_count] = voters.size
+      json[:voter_count] = ballot.participations.size
       json[:voters] = voters.map { |u| { id: u.id, username: u.username, name: u.name } }
       if ballot.over?
         json[:black_count] = ballot.black_count
@@ -184,10 +186,12 @@ module Ballotage
     end
 
     def parse_in_zone(zone, date, time)
-      unless date.to_s.match?(/\A\d{4}-\d{2}-\d{2}\z/) && time.to_s.match?(/\A\d{2}:\d{2}\z/)
+      y, m, d = date.to_s.match(/\A(\d{4})-(\d{2})-(\d{2})\z/)&.captures&.map(&:to_i)
+      hh, mm = time.to_s.match(/\A(\d{2}):(\d{2})\z/)&.captures&.map(&:to_i)
+      unless y && hh && Date.valid_date?(y, m, d) && hh < 24 && mm < 60
         raise Discourse::InvalidParameters.new(:date)
       end
-      zone.parse("#{date} #{time}") || raise(Discourse::InvalidParameters.new(:date))
+      zone.local(y, m, d, hh, mm)
     end
 
     def ensure_can_oversee
