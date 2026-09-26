@@ -6,6 +6,7 @@ Ballotage::Engine.routes.draw do
   get "/current" => "ballots#current"
   post "/vote" => "ballots#vote"
   get "/ballots" => "ballots#index"
+  get "/ballots/:id" => "ballots#show"
   post "/ballots" => "ballots#create"
   post "/ballots/:id/cancel" => "ballots#cancel"
   post "/ballots/:id/finalize" => "ballots#finalize"

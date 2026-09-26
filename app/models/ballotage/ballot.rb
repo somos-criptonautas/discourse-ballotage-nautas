@@ -10,6 +10,7 @@ module Ballotage
     end
 
     has_many :participations, class_name: "Ballotage::Participation", dependent: :delete_all
+    belongs_to :post, optional: true
 
     validates :title, presence: true, length: { maximum: 255 }
     validates :starts_at, presence: true
@@ -18,10 +19,25 @@ module Ballotage
 
     scope :not_cancelled, -> { where(cancelled_at: nil) }
 
-    # The ballot that is scheduled or running right now, if any. Only one may
-    # exist at a time (enforced in the controller when creating).
-    def self.current
-      not_cancelled.where("ends_at > ?", Time.zone.now).order(:starts_at).first
+    # Scheduled or running ballots, soonest first. Several may run at once.
+    def self.active
+      not_cancelled.where("ends_at > ?", Time.zone.now).order(:starts_at, :id)
+    end
+
+    # Open ballots the user can still vote in — drives the sidebar badge.
+    def self.pending_for(user)
+      active
+        .where("starts_at <= ?", Time.zone.now)
+        .where.not(id: Participation.where(user_id: user.id).select(:ballot_id))
+    end
+
+    # Links ballots embedded as [ballotage id=N] to the post, the first time
+    # they are embedded and only when the author may manage ballots — so a
+    # random member quoting the tag elsewhere doesn't move the link.
+    def self.link_to_post(post)
+      ids = post.cooked.to_s.scan(/data-ballot-id="(\d+)"/).flatten.map(&:to_i)
+      return if ids.empty? || !Guardian.new(post.user).can_manage_ballotage?
+      where(id: ids, post_id: nil).update_all(post_id: post.id)
     end
 
     # scheduled / open / ended / cancelled — derived from the clock, so nothing
@@ -114,8 +130,10 @@ end
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
 #  created_by_id :bigint           not null
+#  post_id       :bigint
 #
 # Indexes
 #
 #  index_ballotage_ballots_on_ends_at  (ends_at)
+#  index_ballotage_ballots_on_post_id  (post_id)
 #

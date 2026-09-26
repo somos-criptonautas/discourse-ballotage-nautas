@@ -26,7 +26,9 @@ module Ballotage
 
     def ballotage_group_member?(group_id)
       return false if group_id.blank?
-      GroupUser.exists?(user_id: user.id, group_id: group_id.to_i)
+      # One query per guardian (i.e. per request), however many checks run.
+      @ballotage_group_ids ||= GroupUser.where(user_id: user.id).pluck(:group_id)
+      @ballotage_group_ids.include?(group_id.to_i)
     end
   end
 end

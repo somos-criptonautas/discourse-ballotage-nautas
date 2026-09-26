@@ -55,8 +55,8 @@ RSpec.describe Ballotage::BallotsController do
 
       json = response.parsed_body
       expect(json["can_vote"]).to eq(true)
-      expect(json["ballot"]).to be_present
-      expect(json["ballot"]["has_voted"]).to eq(false)
+      expect(json["ballots"].size).to eq(1)
+      expect(json["ballots"].first["has_voted"]).to eq(false)
     end
 
     it "reflects has_voted true after voting" do
@@ -67,7 +67,7 @@ RSpec.describe Ballotage::BallotsController do
 
       get "/ballotage/current.json"
 
-      expect(response.parsed_body["ballot"]["has_voted"]).to eq(true)
+      expect(response.parsed_body["ballots"].first["has_voted"]).to eq(true)
     end
 
     it "hides the ballot from a user who is neither a voter nor an overseer" do
@@ -79,7 +79,7 @@ RSpec.describe Ballotage::BallotsController do
 
       json = response.parsed_body
       expect(json["can_vote"]).to eq(false)
-      expect(json["ballot"]).to be_nil
+      expect(json["ballots"]).to eq([])
     end
 
     it "shows the ballot to an overseer who cannot vote, without has_voted being true" do
@@ -91,8 +91,76 @@ RSpec.describe Ballotage::BallotsController do
 
       json = response.parsed_body
       expect(json["can_oversee"]).to eq(true)
-      expect(json["ballot"]).to be_present
-      expect(json["ballot"]["has_voted"]).to eq(false)
+      expect(json["ballots"].first["has_voted"]).to eq(false)
+      expect(json["ballots"].first["voter_count"]).to eq(0)
+    end
+
+    it "lists several scheduled or open ballots, soonest first" do
+      freeze_time
+      later = create_ballot(starts_at: 1.day.from_now, ends_at: 2.days.from_now)
+      open = create_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+      create_ballot(starts_at: 3.hours.ago, ends_at: 2.hours.ago)
+      sign_in(voter)
+
+      get "/ballotage/current.json"
+
+      expect(response.parsed_body["ballots"].map { |b| b["id"] }).to eq([open.id, later.id])
+    end
+  end
+
+  describe "GET /ballotage/ballots/:id.json" do
+    fab!(:ballot) do
+      Ballotage::Ballot.create!(
+        title: "Embedded",
+        starts_at: 1.hour.ago,
+        ends_at: 1.hour.from_now,
+        created_by_id: Discourse.system_user.id,
+      )
+    end
+
+    it "returns 404 to a member who can neither vote nor oversee" do
+      sign_in(plain_user)
+      get "/ballotage/ballots/#{ballot.id}.json"
+      expect(response.status).to eq(404)
+    end
+
+    it "gives a voter has_voted but no participation or counts" do
+      ballot.cast_vote!(other_voter, "white")
+      sign_in(voter)
+
+      get "/ballotage/ballots/#{ballot.id}.json"
+
+      json = response.parsed_body["ballot"]
+      expect(json["can_vote"]).to eq(true)
+      expect(json["has_voted"]).to eq(false)
+      expect(json).not_to have_key("voter_count")
+      expect(json).not_to have_key("voters")
+      expect(json).not_to have_key("white_count")
+    end
+
+    it "gives an overseer participation but no counts while open" do
+      ballot.cast_vote!(voter, "black")
+      sign_in(overseer)
+
+      get "/ballotage/ballots/#{ballot.id}.json"
+
+      json = response.parsed_body["ballot"]
+      expect(json["voter_count"]).to eq(1)
+      expect(json["eligible_count"]).to eq(2)
+      expect(json).not_to have_key("black_count")
+    end
+
+    it "includes the linked post's url only for viewers who can see it" do
+      post = Fabricate(:post, user: admin, raw: "[ballotage id=#{ballot.id}]\n[/ballotage]")
+      ballot.update!(post_id: post.id)
+      sign_in(voter)
+
+      get "/ballotage/ballots/#{ballot.id}.json"
+      expect(response.parsed_body["ballot"]["post_url"]).to eq(post.url)
+
+      post.topic.update!(category: Fabricate(:private_category, group: Fabricate(:group)))
+      get "/ballotage/ballots/#{ballot.id}.json"
+      expect(response.parsed_body["ballot"]["post_url"]).to be_nil
     end
   end
 
@@ -365,7 +433,7 @@ RSpec.describe Ballotage::BallotsController do
       expect(response.status).to eq(400)
     end
 
-    it "returns 422 when a ballot is already scheduled or open" do
+    it "allows a second ballot while one is scheduled or open" do
       freeze_time
       create_ballot(starts_at: 1.hour.from_now, ends_at: 2.hours.from_now)
       sign_in(admin)
@@ -377,7 +445,9 @@ RSpec.describe Ballotage::BallotsController do
              end_date: end_date,
            }
 
-      expect(response.status).to eq(422)
+      expect(response.status).to eq(201)
+      expect(response.parsed_body["ballot"]["title"]).to eq("Second Ballot")
+      expect(Ballotage::Ballot.count).to eq(2)
     end
 
     it "returns 422 when the end date/time is in the past" do
