@@ -27,17 +27,16 @@ RSpec.describe Ballotage::Ballot do
   end
 
   def notification_labels(user)
-    Notification.where(user_id: user.id).order(:id).map { |n| JSON.parse(n.data)["display_username"] }
+    Notification
+      .where(user_id: user.id)
+      .order(:id)
+      .map { |n| JSON.parse(n.data)["display_username"] }
   end
 
   describe "#close!" do
     it "rejects an admission once the black-ball threshold is reached" do
-      expect(closed_ballot(%w[black white white], rejection_threshold: 1).outcome).to eq(
-        "rejected",
-      )
-      expect(closed_ballot(%w[black white white], rejection_threshold: 2).outcome).to eq(
-        "approved",
-      )
+      expect(closed_ballot(%w[black white white], rejection_threshold: 1).outcome).to eq("rejected")
+      expect(closed_ballot(%w[black white white], rejection_threshold: 2).outcome).to eq("approved")
     end
 
     it "applies the proposal rule, leaving abstentions out of the majority" do
@@ -45,8 +44,11 @@ RSpec.describe Ballotage::Ballot do
         "rejected",
       )
       expect(
-        closed_ballot(%w[white white black abstain], kind: "proposal", approval_rule: "two_thirds")
-          .outcome,
+        closed_ballot(
+          %w[white white black abstain],
+          kind: "proposal",
+          approval_rule: "two_thirds",
+        ).outcome,
       ).to eq("approved")
       expect(
         closed_ballot(%w[white white black], kind: "proposal", approval_rule: "unanimous").outcome,
@@ -108,7 +110,12 @@ RSpec.describe Ballotage::Ballot do
   describe "#finalize!" do
     it "keeps published counts only when the ballot chose to, and always the outcome" do
       kept =
-        closed_ballot(%w[white black], kind: "proposal", result_visibility: "counts", keep_counts: true)
+        closed_ballot(
+          %w[white black],
+          kind: "proposal",
+          result_visibility: "counts",
+          keep_counts: true,
+        )
       kept.finalize!
       expect(kept.reload.white_count).to eq(1)
       expect(kept.outcome).to eq("rejected")

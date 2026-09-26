@@ -10,11 +10,7 @@ class AddRulesAndOutcomeToBallotageBallots < ActiveRecord::Migration[7.2]
     add_column :ballotage_ballots, :rejection_threshold, :integer, null: false, default: 1
     add_column :ballotage_ballots, :approval_rule, :string, null: false, default: "majority"
     add_column :ballotage_ballots, :quorum_percent, :integer
-    add_column :ballotage_ballots,
-               :result_visibility,
-               :string,
-               null: false,
-               default: "overseers"
+    add_column :ballotage_ballots, :result_visibility, :string, null: false, default: "overseers"
     add_column :ballotage_ballots, :keep_counts, :boolean, null: false, default: false
     add_column :ballotage_ballots, :outcome, :string
     add_column :ballotage_ballots, :closed_voter_count, :integer
@@ -26,15 +22,11 @@ class AddRulesAndOutcomeToBallotageBallots < ActiveRecord::Migration[7.2]
     # Existing ballots predate notifications: mark what already happened as done
     # so the first job run doesn't notify about the past. Closed legacy ballots
     # have no rules, so they get no outcome either.
-    reversible do |dir|
-      dir.up do
-        execute <<~SQL
+    reversible { |dir| dir.up { execute <<~SQL } }
           UPDATE ballotage_ballots
           SET opened_notified_at = CASE WHEN starts_at <= NOW() THEN NOW() END,
               reminded_at = CASE WHEN ends_at <= NOW() + INTERVAL '24 hours' THEN NOW() END,
               closed_at = CASE WHEN ends_at <= NOW() THEN NOW() END
         SQL
-      end
-    end
   end
 end

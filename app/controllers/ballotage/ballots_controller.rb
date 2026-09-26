@@ -116,7 +116,8 @@ module Ballotage
           approval_rule: rules[:approval_rule].presence || "majority",
           quorum_percent: int_param(rules[:quorum_percent]),
           # Admissions announce only the outcome; proposals their counts too.
-          result_visibility: rules[:result_visibility].presence || (proposal ? "counts" : "outcome"),
+          result_visibility:
+            rules[:result_visibility].presence || (proposal ? "counts" : "outcome"),
           keep_counts: rules.key?(:keep_counts) ? rules[:keep_counts].to_s == "true" : proposal,
         )
       log_action("ballotage_create", ballot)

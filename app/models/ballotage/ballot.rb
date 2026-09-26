@@ -209,8 +209,7 @@ module Ballotage
     # The outcome as the given viewer may see it: overseers always, everyone
     # else only when the ballot publishes it.
     def outcome_visible_to?(guardian)
-      outcome.present? &&
-        (result_visibility != "overseers" || guardian.can_oversee_ballotage?)
+      outcome.present? && (result_visibility != "overseers" || guardian.can_oversee_ballotage?)
     end
 
     private
