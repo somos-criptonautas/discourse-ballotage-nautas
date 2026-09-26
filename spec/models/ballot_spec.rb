@@ -260,6 +260,29 @@ RSpec.describe Ballotage::Ballot do
       expect(ballot.reload.post_id).to eq(post.id)
     end
 
+    it "tags the topic title with the ballot kind, once, in the author's language" do
+      ballot = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+      post = create_post(admin, ballot)
+      expect(post.topic.reload.title).to start_with("[ADMISSION] Ballot topic")
+
+      proposal = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now, kind: "proposal")
+      SiteSetting.allow_user_locale = true
+      admin.update!(locale: "es")
+      spanish = create_post(admin, proposal)
+      expect(spanish.topic.reload.title).to start_with("[PROPUESTA] Ballot topic")
+    end
+
+    it "doesn't tag a title that already carries the tag" do
+      ballot = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+      post =
+        PostCreator.create!(
+          admin,
+          title: "[ADMISSION] Ana applies to join",
+          raw: "Please vote.\n\n[ballotage id=#{ballot.id}]\n[/ballotage]",
+        )
+      expect(post.topic.reload.title).to eq("[ADMISSION] Ana applies to join")
+    end
+
     it "flags the topic so topic lists can mark it" do
       ballot = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
       post = create_post(admin, ballot)

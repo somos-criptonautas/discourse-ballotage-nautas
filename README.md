@@ -48,7 +48,9 @@ Forked from upstream `v1.0.0-2-g753691d`. Kept up to date with every change in t
   zone. Upstream defaults to a fixed `Europe/Berlin` text value.
 - **Kind tag:** ballots show **[ADMISSION]** or **[PROPOSAL]** before their title (on the
   card and in notifications), added at display time in each reader's language
-  ([ADMISIÓN] / [PROPUESTA] in Spanish) — never stored in the title.
+  ([ADMISIÓN] / [PROPUESTA] in Spanish) — never stored in the ballot title. Topics that
+  embed a ballot get the tag prefixed to their **topic** title (in the author's language,
+  once, when the ballot is first linked; skipped if the title already has it).
 - **Topic lists** show a small ballot-box icon before the title of topics that embed a
   ballot (next to core's pinned/closed icons).
 - **API:** `GET /ballotage/ballots/:id.json` (card data, 404 for non-eligible members);

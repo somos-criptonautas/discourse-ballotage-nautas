@@ -58,7 +58,31 @@ module Ballotage
       ids = post.cooked.to_s.scan(/data-ballot-id="(\d+)"/).flatten.map(&:to_i)
       return if ids.empty? || !Guardian.new(post.user).can_manage_ballotage?
       linked = where(id: ids, post_id: nil).update_all(post_id: post.id)
-      post.topic&.upsert_custom_fields("ballotage" => true) if linked > 0
+      return if linked.zero? || post.topic.nil?
+      post.topic.upsert_custom_fields("ballotage" => true)
+      tag_topic_title(post.topic, where(id: ids).order(:id).pick(:kind), post.user)
+    end
+
+    # Prefixes the topic title with the kind tag ("[ADMISSION] …"), in the
+    # author's language, unless the title already carries it in any language.
+    # Goes through PostRevisor so slug, search and live updates follow, without
+    # adding an edit revision or bumping the topic.
+    def self.tag_topic_title(topic, kind, author)
+      key = "ballotage.kind_tag.#{kind}"
+      known = I18n.available_locales.map { |locale| "[#{I18n.t(key, locale: locale)}]" }
+      return if known.any? { |tag| topic.title.include?(tag) }
+
+      tag = I18n.with_locale(author.effective_locale) { I18n.t(key) }
+      title = "[#{tag}] #{topic.title}"
+      return if title.length > SiteSetting.max_topic_title_length || topic.first_post.nil?
+
+      PostRevisor.new(topic.first_post, topic).revise!(
+        Discourse.system_user,
+        { title: title },
+        skip_validations: true,
+        bypass_bump: true,
+        skip_revision: true,
+      )
     end
 
     def self.eligible_user_ids
