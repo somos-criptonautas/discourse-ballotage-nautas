@@ -26,7 +26,7 @@ Forked from upstream `v1.0.0-2-g753691d`. Kept up to date with every change in t
   empty states and a FormKit create form in a modal. Managers can cancel/finalize/delete
   straight from the card.
 - **Ballot kinds and decision rules.** *Admission* (black/white balls; rejected once N
-  black balls are cast) or *Proposal* (approve / reject / abstain; simple majority,
+  black balls are cast, or once black balls reach X% of the votes cast) or *Proposal* (approve / reject / abstain; simple majority,
   two-thirds or unanimous; abstentions count toward quorum only). Optional quorum as a
   share of the voting group. Rules are set at creation and can't be changed afterwards.
 - **Outcome.** When a ballot ends, "Approved", "Rejected" or "No quorum" and the turnout

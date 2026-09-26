@@ -58,6 +58,15 @@ RSpec.describe Ballotage::BallotsController do
       expect(ballot.rejection_threshold).to eq(2)
     end
 
+    it "stores a percentage rejection rule for admissions" do
+      create(rejection_percent: "25")
+      expect(Ballotage::Ballot.last.rejection_percent).to eq(25)
+      expect(response.parsed_body["ballot"]["rejection_percent"]).to eq(25)
+
+      create(rejection_percent: "150")
+      expect(response.status).to eq(422)
+    end
+
     it "rejects unknown rules" do
       create(approval_rule: "whatever")
       expect(response.status).to eq(422)

@@ -39,6 +39,12 @@ RSpec.describe Ballotage::Ballot do
       expect(closed_ballot(%w[black white white], rejection_threshold: 2).outcome).to eq("approved")
     end
 
+    it "rejects an admission by share of black balls when a percentage is set" do
+      votes = %w[black white white white]
+      expect(closed_ballot(votes, rejection_percent: 25).outcome).to eq("rejected")
+      expect(closed_ballot(votes, rejection_percent: 30).outcome).to eq("approved")
+    end
+
     it "applies the proposal rule, leaving abstentions out of the majority" do
       expect(closed_ballot(%w[white black abstain abstain], kind: "proposal").outcome).to eq(
         "rejected",
