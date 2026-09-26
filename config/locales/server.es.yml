@@ -1,0 +1,27 @@
+es:
+  site_settings:
+    ballotage_enabled: "Activar votaciones secretas. Se insertan en publicaciones con [ballotage id=N]; todas las abiertas aparecen en /ballotage."
+    ballotage_voting_group: "Grupo cuyos miembros pueden votar."
+    ballotage_oversight_group: "Grupo de supervisión: ve (en las publicaciones y en /ballotage/manage) quién ha votado y, al terminar, el resultado. Los administradores siempre tienen acceso."
+    ballotage_oversight_can_manage: "Permitir que el grupo de supervisión cree, cancele, finalice y borre votaciones (si no, solo los administradores)."
+    ballotage_info_text: "Aviso opcional que se muestra en /ballotage bajo el contenido, p. ej. quién puede votar. Déjalo vacío para no mostrar aviso."
+    ballotage_timezone: "Zona horaria para el inicio y el cierre de las votaciones (nombre IANA, p. ej. Europe/Madrid)."
+  ballotage:
+    outcome:
+      approved: "Aprobada"
+      rejected: "Rechazada"
+      no_quorum: "Sin quórum"
+    notifications:
+      opened: "Votación secreta abierta — emite tu voto"
+      reminder:
+        one: "La votación cierra en 1 hora aprox. — aún no has votado"
+        other: "La votación cierra en %{count} horas aprox. — aún no has votado"
+      closed: "Votación cerrada%{outcome}"
+    errors:
+      ends_before_starts: "debe ser posterior al inicio"
+      ends_in_past: "El cierre de la votación ya ha pasado."
+      not_open: "Esta votación no está abierta."
+      already_voted: "Ya has votado. Un voto no se puede cambiar."
+      not_cancellable: "Solo se pueden cancelar votaciones programadas o abiertas."
+      not_deletable: "Solo se pueden borrar votaciones finalizadas."
+      not_finalizable: "Solo se pueden finalizar votaciones terminadas o canceladas."

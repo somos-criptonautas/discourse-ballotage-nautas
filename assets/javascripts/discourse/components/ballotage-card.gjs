@@ -93,19 +93,63 @@ export default class BallotageCard extends Component {
     return this.barStyle(voter_count, eligible_count);
   }
 
+  get choices() {
+    return (this.ballot.choices ?? ["black", "white"]).map((choice) => ({
+      choice,
+      label: this.choiceLabel(choice),
+    }));
+  }
+
+  choiceLabel(choice) {
+    return i18n(
+      `ballotage.choice.${this.ballot.kind ?? "admission"}.${choice}`
+    );
+  }
+
+  get isAdmission() {
+    return (this.ballot.kind ?? "admission") === "admission";
+  }
+
+  // "Rejected with 2 or more black balls · Quorum 50%"
+  get ruleSummary() {
+    const b = this.ballot;
+    const rule = this.isAdmission
+      ? i18n("ballotage.rule.admission", { count: b.rejection_threshold ?? 1 })
+      : i18n(`ballotage.approval_rule.${b.approval_rule}`);
+    return b.quorum_percent
+      ? `${rule} · ${i18n("ballotage.rule.quorum", { percent: b.quorum_percent })}`
+      : rule;
+  }
+
+  get outcomeLabel() {
+    return i18n(`ballotage.outcome.${this.ballot.outcome}`);
+  }
+
+  get closedTurnout() {
+    const { closed_voter_count, closed_eligible_count } = this.ballot;
+    return closed_eligible_count
+      ? i18n("ballotage.manage.participation_of", {
+          voted: closed_voter_count,
+          total: closed_eligible_count,
+        })
+      : i18n("ballotage.manage.participation", { voted: closed_voter_count });
+  }
+
+  get hasCounts() {
+    return this.ballot.black_count !== undefined;
+  }
+
   get results() {
-    const { black_count, white_count } = this.ballot;
-    const total = black_count + white_count;
-    return ["black", "white"].map((choice) => {
-      const count = this.ballot[`${choice}_count`];
-      return {
-        choice,
-        count,
-        label: i18n(`ballotage.choice.${choice}`),
-        percent: percent(count, total),
-        style: this.barStyle(count, total),
-      };
-    });
+    const counts = this.choices.map(
+      (c) => this.ballot[`${c.choice}_count`] ?? 0
+    );
+    const total = counts.reduce((a, b) => a + b, 0);
+    return this.choices.map((c, i) => ({
+      ...c,
+      count: counts[i],
+      percent: percent(counts[i], total),
+      style: this.barStyle(counts[i], total),
+    }));
   }
 
   barStyle(part, total) {
@@ -116,7 +160,9 @@ export default class BallotageCard extends Component {
   @action
   vote(choice) {
     this.dialog.yesNoConfirm({
-      message: i18n(`ballotage.vote.confirm_${choice}`),
+      message: i18n("ballotage.vote.confirm", {
+        choice: this.choiceLabel(choice),
+      }),
       didConfirm: async () => {
         const ok = await this.request("/ballotage/vote.json", "POST", {
           ballot_id: this.ballot.id,
@@ -213,10 +259,42 @@ export default class BallotageCard extends Component {
             {{#if this.timeHint}}
               <span>{{dIcon "clock"}} {{this.timeHint}}</span>
             {{/if}}
+            <span>{{dIcon "scale-balanced"}} {{this.ruleSummary}}</span>
           </p>
         </header>
 
         <div class="ballotage-card__body">
+          {{#if this.ballot.outcome}}
+            <p
+              class="ballotage-outcome ballotage-outcome--{{this.ballot.outcome}}"
+            >
+              <strong>{{this.outcomeLabel}}</strong>
+              <span
+                class="ballotage-outcome__turnout"
+              >{{this.closedTurnout}}</span>
+            </p>
+          {{/if}}
+
+          {{#if (and this.hasCounts (not this.oversees))}}
+            <ul class="ballotage-results">
+              {{#each this.results as |r|}}
+                <li class="ballotage-meter ballotage-meter--{{r.choice}}">
+                  <span class="ballotage-meter__label">
+                    {{#if this.isAdmission}}
+                      <span class="ballotage-ball" aria-hidden="true"></span>
+                    {{/if}}
+                    {{r.label}}
+                    <strong>{{r.count}}</strong>
+                    <span class="ballotage-meter__pct">{{r.percent}}%</span>
+                  </span>
+                  <span class="ballotage-meter__track" aria-hidden="true">
+                    <span class="ballotage-meter__bar" style={{r.style}}></span>
+                  </span>
+                </li>
+              {{/each}}
+            </ul>
+          {{/if}}
+
           {{#if this.ballot.finalized}}
             <p class="ballotage-card__text">{{i18n
                 "ballotage.manage.finalized_hint"
@@ -234,23 +312,21 @@ export default class BallotageCard extends Component {
             <p class="ballotage-card__text">{{i18n
                 "ballotage.vote.instructions"
               }}</p>
-            <div class="ballotage-choices">
-              <DButton
-                class="btn-default ballotage-choice ballotage-choice--black"
-                @action={{fn this.vote "black"}}
-                @disabled={{this.busy}}
-              >
-                <span class="ballotage-ball" aria-hidden="true"></span>
-                {{i18n "ballotage.choice.black"}}
-              </DButton>
-              <DButton
-                class="btn-default ballotage-choice ballotage-choice--white"
-                @action={{fn this.vote "white"}}
-                @disabled={{this.busy}}
-              >
-                <span class="ballotage-ball" aria-hidden="true"></span>
-                {{i18n "ballotage.choice.white"}}
-              </DButton>
+            <div
+              class="ballotage-choices ballotage-choices--{{this.choices.length}}"
+            >
+              {{#each this.choices as |c|}}
+                <DButton
+                  class="btn-default ballotage-choice ballotage-choice--{{c.choice}}"
+                  @action={{fn this.vote c.choice}}
+                  @disabled={{this.busy}}
+                >
+                  {{#if this.isAdmission}}
+                    <span class="ballotage-ball" aria-hidden="true"></span>
+                  {{/if}}
+                  {{c.label}}
+                </DButton>
+              {{/each}}
             </div>
           {{else if (and this.ballot.can_vote this.over)}}
             <p class="ballotage-card__text">{{i18n "ballotage.vote.closed"}}</p>
@@ -270,12 +346,17 @@ export default class BallotageCard extends Component {
                 {{/if}}
               </div>
 
-              {{#if this.over}}
+              {{#if this.hasCounts}}
                 <ul class="ballotage-results">
                   {{#each this.results as |r|}}
                     <li class="ballotage-meter ballotage-meter--{{r.choice}}">
                       <span class="ballotage-meter__label">
-                        <span class="ballotage-ball" aria-hidden="true"></span>
+                        {{#if this.isAdmission}}
+                          <span
+                            class="ballotage-ball"
+                            aria-hidden="true"
+                          ></span>
+                        {{/if}}
                         {{r.label}}
                         <strong>{{r.count}}</strong>
                         <span class="ballotage-meter__pct">{{r.percent}}%</span>
@@ -289,7 +370,7 @@ export default class BallotageCard extends Component {
                     </li>
                   {{/each}}
                 </ul>
-              {{else}}
+              {{else if (not this.over)}}
                 <p class="ballotage-card__hint">{{i18n
                     "ballotage.manage.result_after_end"
                   }}</p>

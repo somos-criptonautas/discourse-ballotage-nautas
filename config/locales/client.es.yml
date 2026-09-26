@@ -1,0 +1,101 @@
+es:
+  js:
+    ballotage:
+      title: "Votaciones"
+      description: "Votaciones secretas: nunca se guarda tu elección, solo que votaste."
+      view_discussion: "Ver la discusión"
+      embed:
+        unavailable: "Aquí hay una votación secreta. Solo los miembros habilitados pueden verla."
+      sidebar:
+        text: "Votaciones"
+        title: "Votaciones secretas en las que puedes votar"
+      composer:
+        insert: "Insertar votación secreta"
+        placeholder: "🗳 Votación secreta #%{id} — visible para los miembros habilitados al publicar"
+        intro: "Crea la votación y la inserta en tu publicación. Solo los miembros del grupo de votación pueden votar; la elección nunca se guarda."
+      none: "No hay votaciones programadas ni abiertas."
+      load_error: "No se pudieron cargar los datos. Recarga la página."
+      period: "%{start} a %{end}"
+      kind:
+        admission: "Admisión (bolas negras/blancas)"
+        proposal: "Propuesta (a favor/en contra/abstención)"
+      choice:
+        admission:
+          black: "Negra"
+          white: "Blanca"
+        proposal:
+          white: "A favor"
+          black: "En contra"
+          abstain: "Abstención"
+      rule:
+        admission:
+          one: "Rechazada con 1 bola negra"
+          other: "Rechazada con %{count} o más bolas negras"
+        quorum: "Quórum %{percent} %"
+      approval_rule:
+        majority: "Aprueba por mayoría simple"
+        two_thirds: "Requiere mayoría de dos tercios"
+        unanimous: "Requiere unanimidad"
+      outcome:
+        approved: "Aprobada"
+        rejected: "Rechazada"
+        no_quorum: "Sin quórum"
+      result_visibility:
+        outcome: "Publicar el resultado al cerrar"
+        counts: "Publicar el resultado y el recuento"
+        overseers: "Solo la supervisión ve el resultado"
+      vote:
+        instructions: "Emite tu voto. Un voto emitido no se puede cambiar."
+        confirm: "Vas a votar «%{choice}». Es definitivo y no se puede cambiar. ¿Continuar?"
+        done: "Tu voto se ha registrado. Gracias."
+        starts_relative: "Abre %{relative}"
+        ends_relative: "Cierra %{relative}"
+        not_started: "La votación aún no ha abierto."
+        closed: "La votación ha terminado."
+        not_eligible: "No estás habilitado para votar en esta votación."
+      state:
+        scheduled: "Programada"
+        open: "Abierta"
+        ended: "Terminada"
+        cancelled: "Cancelada"
+        completed: "Completada"
+      manage:
+        title: "Gestionar votaciones"
+        description: "Participación mientras están abiertas, resultado cuando terminan."
+        finalized_hint: "Finalizada: se ha borrado la lista de quién votó."
+        link: "Gestionar votaciones"
+        forbidden: "No tienes acceso a la gestión de votaciones."
+        new: "Nueva votación"
+        empty: "Aún no se ha creado ninguna votación."
+        participation: "Votos emitidos: %{voted}"
+        participation_of: "Votos emitidos: %{voted} de %{total}"
+        voters: "¿Quién ha votado?"
+        result_after_end: "El resultado solo se muestra cuando la votación ha terminado."
+        cancel: "Cancelar votación"
+        confirm_cancel: "¿Cancelar la votación «%{title}»? No se podrán emitir más votos."
+        delete: "Borrar"
+        delete_title: "Borrar votación"
+        confirm_delete: "¿Borrar «%{title}» de la lista por completo? No se puede deshacer."
+        finalize: "Finalizar"
+        finalize_title: "Finalizar votación"
+        confirm_finalize: "Atención: finalizar «%{title}» borra para siempre la lista de quién votó y —salvo que esta votación conserve su recuento publicado— el recuento. Quedan el título, el periodo, el estado y el resultado. No se puede deshacer."
+        form:
+          kind: "Tipo"
+          title: "Título"
+          title_placeholder: "p. ej. Admisión de … / Propuesta: …"
+          start_date: "Día de inicio"
+          end_date: "Día de cierre"
+          start_time: "Hora"
+          end_time: "Hora"
+          custom_times: "Elegir horas"
+          default_times_hint: "Abre a las 00:01 del día de inicio y cierra a las 23:59 del día de cierre."
+          rejection_threshold: "Bolas negras para rechazar"
+          rejection_threshold_hint: "La candidatura se rechaza cuando se emiten tantas bolas negras."
+          approval_rule: "Regla de decisión"
+          approval_rule_hint: "Las abstenciones cuentan para el quórum, no para la mayoría."
+          quorum_percent: "Quórum (%)"
+          quorum_percent_hint: "Opcional: parte del grupo de votación que debe votar."
+          result_visibility: "Quién ve el resultado"
+          keep_counts: "Conservar el recuento al finalizar"
+          keep_counts_hint: "Finalizar sigue borrando la lista de quién votó."
+          submit: "Crear votación"

@@ -187,7 +187,8 @@ module Ballotage
       transaction do
         participations.delete_all
         columns = { finalized_at: Time.zone.now }
-        unless keep_counts && result_visibility == "counts"
+        # Only an ended ballot that published its counts may keep them.
+        unless keep_counts && result_visibility == "counts" && outcome.present?
           columns.merge!(black_count: 0, white_count: 0, abstain_count: 0)
         end
         update_columns(columns)

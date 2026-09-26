@@ -34,6 +34,7 @@ export default {
     withPluginApi((api) => {
       api.decorateCookedElement(attachBallots, { id: "ballotage" });
       api.registerRichEditorExtension(richEditorExtension);
+      api.replaceIcon("notification.ballotage.notification", "check-to-slot");
 
       const currentUser = api.getCurrentUser();
       const perms = currentUser?.ballotage;

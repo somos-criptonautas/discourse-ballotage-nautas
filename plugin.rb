@@ -21,6 +21,7 @@ register_asset "stylesheets/ballotage.scss"
   list-check
   lock
   plus
+  scale-balanced
   trash-can
   xmark
 ].each { |i| register_svg_icon i }

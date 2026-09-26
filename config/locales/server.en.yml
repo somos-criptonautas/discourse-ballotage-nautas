@@ -1,12 +1,22 @@
 en:
   site_settings:
-    ballotage_enabled: "Enable secret black/white ballots. Embed them in posts with [ballotage id=N]; all open ballots are listed at /ballotage."
+    ballotage_enabled: "Enable secret ballots. Embed them in posts with [ballotage id=N]; all open ballots are listed at /ballotage."
     ballotage_voting_group: "Group whose members may vote."
     ballotage_oversight_group: "Oversight group: sees (in posts and at /ballotage/manage) who has voted and, after the end, the result. Administrators always have access."
     ballotage_oversight_can_manage: "Allow the oversight group to create, cancel, finalize and delete ballots (otherwise administrators only)."
     ballotage_info_text: "Optional notice shown on /ballotage below the content, e.g. who is eligible to vote. Leave empty to show no notice."
     ballotage_timezone: "Time zone for ballot start and end times (IANA name, e.g. Europe/Berlin)."
   ballotage:
+    outcome:
+      approved: "Approved"
+      rejected: "Rejected"
+      no_quorum: "No quorum"
+    notifications:
+      opened: "Secret ballot open — cast your vote"
+      reminder:
+        one: "Ballot closes in about 1 hour — you haven't voted yet"
+        other: "Ballot closes in about %{count} hours — you haven't voted yet"
+      closed: "Ballot closed%{outcome}"
     errors:
       ends_before_starts: "must be after the start"
       ends_in_past: "The ballot's end is in the past."

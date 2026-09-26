@@ -270,3 +270,42 @@
   color: var(--primary-high);
   background: var(--primary-very-low);
 }
+
+.ballotage-choices--3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.ballotage-outcome {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--d-border-radius);
+  background: var(--primary-very-low);
+
+  strong {
+    font-size: var(--font-up-1);
+  }
+
+  &--approved {
+    background: var(--success-low);
+
+    strong {
+      color: var(--success);
+    }
+  }
+
+  &--rejected {
+    background: var(--danger-low);
+
+    strong {
+      color: var(--danger);
+    }
+  }
+
+  &__turnout {
+    color: var(--primary-high);
+    font-size: var(--font-down-1);
+  }
+}
