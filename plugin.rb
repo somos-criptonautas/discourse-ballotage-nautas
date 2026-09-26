@@ -29,12 +29,12 @@ after_initialize do
 
   # Drives the composer button, the sidebar link and its badge.
   add_to_serializer(:current_user, :ballotage) do
+    can_vote = scope.can_vote_in_ballotage?
     {
-      can_vote: scope.can_vote_in_ballotage?,
+      can_vote: can_vote,
       can_oversee: scope.can_oversee_ballotage?,
       can_manage: scope.can_manage_ballotage?,
-      pending_count:
-        scope.can_vote_in_ballotage? ? Ballotage::Ballot.pending_for(object).count : 0,
+      pending_count: can_vote ? Ballotage::Ballot.pending_for(object).count : 0,
     }
   end
 

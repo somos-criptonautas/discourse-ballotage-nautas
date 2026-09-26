@@ -120,7 +120,6 @@ end
 # Table name: ballotage_ballots
 #
 #  id            :bigint           not null, primary key
-#  post_id       :bigint
 #  black_count   :integer          default(0), not null
 #  cancelled_at  :datetime
 #  ends_at       :datetime         not null
@@ -131,6 +130,7 @@ end
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
 #  created_by_id :bigint           not null
+#  post_id       :bigint
 #
 # Indexes
 #
