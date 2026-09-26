@@ -83,7 +83,8 @@ es:
         form:
           kind: "Tipo"
           title: "Título"
-          title_placeholder: "p. ej. Admisión de … / Propuesta: …"
+          title_placeholder_admission: "[ADMISIÓN] …"
+          title_placeholder_proposal: "[PROPUESTA] …"
           start_date: "Día de inicio"
           end_date: "Día de cierre"
           start_time: "Hora"

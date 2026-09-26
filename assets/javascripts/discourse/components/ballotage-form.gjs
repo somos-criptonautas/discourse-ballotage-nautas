@@ -119,7 +119,9 @@ export default class BallotageForm extends Component {
         as |field|
       >
         <field.Control
-          placeholder={{i18n "ballotage.manage.form.title_placeholder"}}
+          placeholder={{i18n
+            (concat "ballotage.manage.form.title_placeholder_" data.kind)
+          }}
         />
       </form.Field>
 

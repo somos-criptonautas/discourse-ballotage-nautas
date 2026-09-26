@@ -83,7 +83,8 @@ de:
         form:
           kind: "Art"
           title: "Titel"
-          title_placeholder: "z. B. Aufnahme von … / Antrag: …"
+          title_placeholder_admission: "[AUFNAHME] …"
+          title_placeholder_proposal: "[ANTRAG] …"
           start_date: "Starttag"
           end_date: "Endtag"
           start_time: "Uhrzeit"

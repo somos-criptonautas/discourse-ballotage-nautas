@@ -36,6 +36,16 @@ RSpec.describe "Ballot embedded in a post" do
     expect(ballot.reload.white_count).to eq(1)
   end
 
+  it "marks the topic with a ballot icon in topic lists" do
+    post.topic.upsert_custom_fields("ballotage" => true)
+    sign_in(voter)
+    visit("/latest")
+
+    expect(page).to have_css(
+      ".topic-list-item[data-topic-id='#{post.topic_id}'] .topic-status.--ballotage",
+    )
+  end
+
   it "shows only a neutral notice to members who cannot vote or oversee" do
     sign_in(plain_user)
     visit(post.url)

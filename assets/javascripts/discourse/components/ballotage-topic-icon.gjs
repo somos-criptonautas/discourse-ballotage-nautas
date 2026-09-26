@@ -1,14 +1,18 @@
+import { eq } from "discourse/truth-helpers";
 import dIcon from "discourse/ui-kit/helpers/d-icon";
 import { i18n } from "discourse-i18n";
 
-// Ballot-box icon before the title in topic lists, next to core's
-// pinned/closed status icons, for topics that embed a ballot.
+// Ballot-box icon among core's topic status icons (pinned, closed…) in topic
+// lists. after-topic-status lives inside core's TopicStatus, which every topic
+// list layout renders — including themes like Horizon that drop other outlets.
 const BallotageTopicIcon = <template>
-  {{#if @outletArgs.topic.ballotage}}
-    <span
-      class="ballotage-topic-icon"
-      title={{i18n "ballotage.topic_list_title"}}
-    >{{dIcon "check-to-slot"}}</span>
+  {{#if (eq @outletArgs.context "topic-list")}}
+    {{#if @outletArgs.topic.ballotage}}
+      <span
+        class="topic-status --ballotage"
+        title={{i18n "ballotage.topic_list_title"}}
+      >{{dIcon "check-to-slot"}}</span>
+    {{/if}}
   {{/if}}
 </template>;
 

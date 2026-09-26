@@ -83,7 +83,8 @@ en:
         form:
           kind: "Type"
           title: "Title"
-          title_placeholder: "e.g. Admission of … / Proposal: …"
+          title_placeholder_admission: "[ADMISSION] …"
+          title_placeholder_proposal: "[PROPOSAL] …"
           start_date: "Start day"
           end_date: "End day"
           start_time: "Time"

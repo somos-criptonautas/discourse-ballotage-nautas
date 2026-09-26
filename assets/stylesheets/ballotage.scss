@@ -309,10 +309,3 @@
     font-size: var(--font-down-1);
   }
 }
-
-// Ballot-box mark before the title in topic lists, styled like core's
-// pinned/closed status icons.
-.ballotage-topic-icon {
-  margin-right: 0.25em;
-  color: var(--primary-medium);
-}
