@@ -36,6 +36,7 @@ require_relative "lib/ballotage/engine"
 # from after_initialize are lost on reload and every endpoint 404s.
 after_initialize do
   require_relative "lib/ballotage/guardian_extension"
+  require_relative "lib/ballotage/tick_job"
 
   reloadable_patch { Guardian.prepend(Ballotage::GuardianExtension) }
 
