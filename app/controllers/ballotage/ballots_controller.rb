@@ -81,7 +81,8 @@ module Ballotage
 
     # POST /ballotage/ballots — params: title, start_date, end_date,
     # optional start_time / end_time (HH:MM, default 00:01 / 23:59), kind
-    # (admission|proposal), rejection_threshold, approval_rule, quorum_percent,
+    # (admission|proposal), rejection_threshold or rejection_percent,
+    # approval_rule, quorum_percent,
     # result_visibility, keep_counts. The rules can't be changed afterwards:
     # there is no update endpoint, so nobody can tune them after seeing counts.
     def create
@@ -102,6 +103,7 @@ module Ballotage
         params.slice(
           :kind,
           :rejection_threshold,
+          :rejection_percent,
           :approval_rule,
           :quorum_percent,
           :result_visibility,
@@ -118,6 +120,7 @@ module Ballotage
           created_by_id: current_user.id,
           kind: kind,
           rejection_threshold: int_param(rules[:rejection_threshold]) || 1,
+          rejection_percent: int_param(rules[:rejection_percent]),
           approval_rule: rules[:approval_rule].presence || "majority",
           quorum_percent: int_param(rules[:quorum_percent]),
           # Admissions announce only the outcome; proposals their counts too.
@@ -188,6 +191,7 @@ module Ballotage
         kind: ballot.kind,
         choices: ballot.choices,
         rejection_threshold: ballot.rejection_threshold,
+        rejection_percent: ballot.rejection_percent,
         approval_rule: ballot.approval_rule,
         quorum_percent: ballot.quorum_percent,
         result_visibility: ballot.result_visibility,

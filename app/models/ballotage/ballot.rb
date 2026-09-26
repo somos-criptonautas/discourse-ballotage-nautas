@@ -28,6 +28,13 @@ module Ballotage
     validates :approval_rule, inclusion: { in: APPROVAL_RULES }
     validates :result_visibility, inclusion: { in: VISIBILITIES }
     validates :rejection_threshold, numericality: { only_integer: true, greater_than: 0 }
+    validates :rejection_percent,
+              numericality: {
+                only_integer: true,
+                greater_than: 0,
+                less_than_or_equal_to: 100,
+              },
+              allow_nil: true
     validates :quorum_percent,
               numericality: {
                 only_integer: true,
@@ -239,7 +246,10 @@ module Ballotage
       end
 
       approved =
-        if kind == "admission"
+        if kind == "admission" && rejection_percent
+          # Share of votes cast; every admission voter casts black or white.
+          black_count * 100 < rejection_percent * voters
+        elsif kind == "admission"
           black_count < rejection_threshold
         else
           yes = white_count
@@ -318,6 +328,7 @@ end
 #  opened_notified_at    :datetime
 #  outcome               :string
 #  quorum_percent        :integer
+#  rejection_percent     :integer
 #  rejection_threshold   :integer          default(1), not null
 #  reminded_at           :datetime
 #  result_visibility     :string           default("overseers"), not null

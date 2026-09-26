@@ -19,7 +19,9 @@ export default class BallotageForm extends Component {
 
   formData = {
     kind: "admission",
+    rejection_mode: "count",
     rejection_threshold: 1,
+    rejection_percent: 25,
     approval_rule: "majority",
     quorum_percent: null,
     result_visibility: "outcome",
@@ -62,7 +64,11 @@ export default class BallotageForm extends Component {
       keep_counts: data.result_visibility === "counts" && !!data.keep_counts,
     };
     if (data.kind === "admission") {
-      payload.rejection_threshold = data.rejection_threshold;
+      if (data.rejection_mode === "percent") {
+        payload.rejection_percent = data.rejection_percent;
+      } else {
+        payload.rejection_threshold = data.rejection_threshold;
+      }
     } else {
       payload.approval_rule = data.approval_rule;
     }
@@ -195,23 +201,64 @@ export default class BallotageForm extends Component {
         </form.Row>
       {{/if}}
 
-      <form.Row as |row|>
-        <row.Col @size={{6}}>
-          {{#if (eq data.kind "admission")}}
+      {{#if (eq data.kind "admission")}}
+        <form.Row as |row|>
+          <row.Col @size={{6}}>
             <form.Field
-              @name="rejection_threshold"
-              @title={{i18n "ballotage.manage.form.rejection_threshold"}}
-              @description={{i18n
-                "ballotage.manage.form.rejection_threshold_hint"
-              }}
-              @type="input-number"
-              @validation="required|integer|between:1,1000"
+              @name="rejection_mode"
+              @title={{i18n "ballotage.manage.form.rejection_mode"}}
+              @type="select"
+              @validation="required"
               @format="full"
               as |field|
             >
-              <field.Control min="1" />
+              <field.Control as |select|>
+                <select.Option @value="count">{{i18n
+                    "ballotage.manage.form.rejection_mode_count"
+                  }}</select.Option>
+                <select.Option @value="percent">{{i18n
+                    "ballotage.manage.form.rejection_mode_percent"
+                  }}</select.Option>
+              </field.Control>
             </form.Field>
-          {{else}}
+          </row.Col>
+          <row.Col @size={{6}}>
+            {{#if (eq data.rejection_mode "percent")}}
+              <form.Field
+                @name="rejection_percent"
+                @title={{i18n "ballotage.manage.form.rejection_percent"}}
+                @description={{i18n
+                  "ballotage.manage.form.rejection_percent_hint"
+                }}
+                @type="input-number"
+                @validation="required|integer|between:1,100"
+                @format="full"
+                as |field|
+              >
+                <field.Control min="1" max="100" />
+              </form.Field>
+            {{else}}
+              <form.Field
+                @name="rejection_threshold"
+                @title={{i18n "ballotage.manage.form.rejection_threshold"}}
+                @description={{i18n
+                  "ballotage.manage.form.rejection_threshold_hint"
+                }}
+                @type="input-number"
+                @validation="required|integer|between:1,1000"
+                @format="full"
+                as |field|
+              >
+                <field.Control min="1" />
+              </form.Field>
+            {{/if}}
+          </row.Col>
+        </form.Row>
+      {{/if}}
+
+      <form.Row as |row|>
+        {{#unless (eq data.kind "admission")}}
+          <row.Col @size={{6}}>
             <form.Field
               @name="approval_rule"
               @title={{i18n "ballotage.manage.form.approval_rule"}}
@@ -229,8 +276,8 @@ export default class BallotageForm extends Component {
                 {{/each}}
               </field.Control>
             </form.Field>
-          {{/if}}
-        </row.Col>
+          </row.Col>
+        {{/unless}}
         <row.Col @size={{6}}>
           <form.Field
             @name="quorum_percent"

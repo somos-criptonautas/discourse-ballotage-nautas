@@ -32,6 +32,7 @@ de:
         admission:
           one: "Abgelehnt bei 1 schwarzen Kugel"
           other: "Abgelehnt ab %{count} schwarzen Kugeln"
+        admission_percent: "Abgelehnt ab %{percent} % schwarzen Kugeln"
         quorum: "Quorum %{percent} %"
       approval_rule:
         majority: "Einfache Mehrheit"
@@ -92,6 +93,11 @@ de:
           custom_times: "Uhrzeiten anpassen"
           default_times_hint: "Beginn am Starttag um 00:01 Uhr, Ende am Endtag um 23:59 Uhr (%{zone})."
           times_zone_hint: "Uhrzeiten in %{zone}."
+          rejection_mode: "Ablehnung nach"
+          rejection_mode_count: "Anzahl schwarzer Kugeln"
+          rejection_mode_percent: "Anteil schwarzer Kugeln"
+          rejection_percent: "Schwarze Kugeln zur Ablehnung (%)"
+          rejection_percent_hint: "Abgelehnt, sobald die schwarzen Kugeln diesen Anteil der abgegebenen Stimmen erreichen."
           rejection_threshold: "Schwarze Kugeln zur Ablehnung"
           rejection_threshold_hint: "Die Aufnahme ist abgelehnt, sobald so viele schwarze Kugeln abgegeben wurden."
           approval_rule: "Mehrheitsregel"

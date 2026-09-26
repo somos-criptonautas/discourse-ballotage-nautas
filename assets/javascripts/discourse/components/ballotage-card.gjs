@@ -118,9 +118,18 @@ export default class BallotageCard extends Component {
   // "Rejected with 2 or more black balls · Quorum 50%"
   get ruleSummary() {
     const b = this.ballot;
-    const rule = this.isAdmission
-      ? i18n("ballotage.rule.admission", { count: b.rejection_threshold ?? 1 })
-      : i18n(`ballotage.approval_rule.${b.approval_rule}`);
+    let rule;
+    if (!this.isAdmission) {
+      rule = i18n(`ballotage.approval_rule.${b.approval_rule}`);
+    } else if (b.rejection_percent) {
+      rule = i18n("ballotage.rule.admission_percent", {
+        percent: b.rejection_percent,
+      });
+    } else {
+      rule = i18n("ballotage.rule.admission", {
+        count: b.rejection_threshold ?? 1,
+      });
+    }
     return b.quorum_percent
       ? `${rule} · ${i18n("ballotage.rule.quorum", { percent: b.quorum_percent })}`
       : rule;
