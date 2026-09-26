@@ -25,8 +25,6 @@ Forked from upstream `v1.0.0-2-g753691d`. Kept up to date with every change in t
   posts, on `/ballotage` and on `/ballotage/manage`; the pages use core page headers,
   empty states and a FormKit create form in a modal. Managers can cancel/finalize/delete
   straight from the card.
-- **Sidebar link** "Ballots" (in the Community section's *More* drawer) for voters and
-  overseers, with a badge counting open ballots you haven't voted in.
 - **Ballot kinds and decision rules.** *Admission* (black/white balls; rejected once N
   black balls are cast) or *Proposal* (approve / reject / abstain; simple majority,
   two-thirds or unanimous; abstentions count toward quorum only). Optional quorum as a
@@ -183,8 +181,8 @@ hooks:
 3. Optionally pick a fixed `ballotage_timezone`; left empty, each ballot uses its creator's time zone.
 4. Optionally decide whether the oversight group may manage ballots
    (`ballotage_oversight_can_manage`), or leave that to admins only.
-5. A "Ballots" link appears for voters and overseers in the sidebar's Community section
-   (under *More*); admins can move it to the main list via the section editor.
+5. Add a link to `/ballotage` wherever you like with core's sidebar editing (e.g. a custom
+   link in the Community section, or a custom sidebar section for the voting group).
 
 ## Usage
 

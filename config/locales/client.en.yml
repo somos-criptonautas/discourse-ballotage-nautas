@@ -7,9 +7,6 @@ en:
       topic_list_title: "This topic has a secret ballot"
       embed:
         unavailable: "A secret ballot is attached here. Only eligible members can see it."
-      sidebar:
-        text: "Ballots"
-        title: "Secret ballots you can vote in"
       composer:
         insert: "Insert secret ballot"
         placeholder: "🗳 Secret ballot #%{id} — shown to eligible members once posted"

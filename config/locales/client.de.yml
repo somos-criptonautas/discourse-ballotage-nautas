@@ -7,9 +7,6 @@ de:
       topic_list_title: "Dieses Thema enthält eine geheime Kugelung"
       embed:
         unavailable: "Hier ist eine geheime Kugelung eingebunden. Nur Stimmberechtigte können sie sehen."
-      sidebar:
-        text: "Kugelungen"
-        title: "Geheime Kugelungen, an denen du teilnehmen kannst"
       composer:
         insert: "Geheime Kugelung einfügen"
         placeholder: "🗳 Geheime Kugelung #%{id} — nach dem Veröffentlichen für Stimmberechtigte sichtbar"

@@ -44,13 +44,6 @@ module Ballotage
       not_cancelled.where("ends_at > ?", Time.zone.now).order(:starts_at, :id)
     end
 
-    # Open ballots the user can still vote in — drives the sidebar badge.
-    def self.pending_for(user)
-      active
-        .where("starts_at <= ?", Time.zone.now)
-        .where.not(id: Participation.where(user_id: user.id).select(:ballot_id))
-    end
-
     # Links ballots embedded as [ballotage id=N] to the post, the first time
     # they are embedded and only when the author may manage ballots — so a
     # random member quoting the tag elsewhere doesn't move the link.

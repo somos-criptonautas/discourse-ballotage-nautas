@@ -223,19 +223,6 @@ RSpec.describe Ballotage::Ballot do
     end
   end
 
-  describe ".pending_for" do
-    fab!(:member, :user)
-
-    it "returns open ballots the user has not voted in" do
-      voted = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
-      pending = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
-      build_ballot(starts_at: 1.hour.from_now, ends_at: 2.hours.from_now)
-      voted.cast_vote!(member, "white")
-
-      expect(Ballotage::Ballot.pending_for(member)).to eq([pending])
-    end
-  end
-
   describe ".link_to_post" do
     fab!(:admin)
     fab!(:member) { Fabricate(:user, trust_level: TrustLevel[1], refresh_auto_groups: true) }

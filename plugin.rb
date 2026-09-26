@@ -43,14 +43,12 @@ after_initialize do
 
   reloadable_patch { Guardian.prepend(Ballotage::GuardianExtension) }
 
-  # Drives the composer button, the sidebar link and its badge.
+  # Drives the composer button and the /ballotage header actions.
   add_to_serializer(:current_user, :ballotage) do
-    can_vote = scope.can_vote_in_ballotage?
     {
-      can_vote: can_vote,
+      can_vote: scope.can_vote_in_ballotage?,
       can_oversee: scope.can_oversee_ballotage?,
       can_manage: scope.can_manage_ballotage?,
-      pending_count: can_vote ? Ballotage::Ballot.pending_for(object).count : 0,
     }
   end
 

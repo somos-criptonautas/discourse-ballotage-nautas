@@ -7,9 +7,6 @@ es:
       topic_list_title: "Este tema tiene una votación secreta"
       embed:
         unavailable: "Aquí hay una votación secreta. Solo los miembros habilitados pueden verla."
-      sidebar:
-        text: "Votaciones"
-        title: "Votaciones secretas en las que puedes votar"
       composer:
         insert: "Insertar votación secreta"
         placeholder: "🗳 Votación secreta #%{id} — visible para los miembros habilitados al publicar"

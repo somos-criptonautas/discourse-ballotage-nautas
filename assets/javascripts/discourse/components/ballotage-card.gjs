@@ -20,7 +20,6 @@ import {
 // What it shows follows from the JSON: voters get has_voted, overseers also
 // get participation (and black/white once over), managers get the actions.
 export default class BallotageCard extends Component {
-  @service appEvents;
   @service dialog;
   @service siteSettings;
 
@@ -170,13 +169,10 @@ export default class BallotageCard extends Component {
         choice: this.choiceLabel(choice),
       }),
       didConfirm: async () => {
-        const ok = await this.request("/ballotage/vote.json", "POST", {
+        await this.request("/ballotage/vote.json", "POST", {
           ballot_id: this.ballot.id,
           choice,
         });
-        if (ok) {
-          this.appEvents.trigger("ballotage:voted");
-        }
       },
     });
   }
