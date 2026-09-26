@@ -3,6 +3,7 @@ import { withPluginApi } from "discourse/lib/plugin-api";
 import { i18n } from "discourse-i18n";
 import richEditorExtension from "../../lib/rich-editor-extension";
 import BallotageEmbed from "../components/ballotage-embed";
+import BallotageTopicIcon from "../components/ballotage-topic-icon";
 import BallotageCreate from "../components/modal/ballotage-create";
 
 function attachBallots(elem, helper) {
@@ -34,6 +35,7 @@ export default {
     withPluginApi((api) => {
       api.decorateCookedElement(attachBallots, { id: "ballotage" });
       api.registerRichEditorExtension(richEditorExtension);
+      api.renderInOutlet("topic-list-before-status", BallotageTopicIcon);
       api.replaceIcon("notification.ballotage.notification", "check-to-slot");
 
       const currentUser = api.getCurrentUser();

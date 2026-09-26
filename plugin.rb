@@ -31,6 +31,8 @@ module ::Ballotage
 end
 
 require_relative "lib/ballotage/engine"
+# Top level, not after_initialize: the timezone setting's dropdown needs it.
+require_relative "lib/ballotage/timezone_enum"
 
 # Models and controllers under app/ are autoloaded by the engine; routes live in
 # config/routes.rb, which the engine reloads with the route set. Routes drawn
@@ -51,6 +53,15 @@ after_initialize do
       pending_count: can_vote ? Ballotage::Ballot.pending_for(object).count : 0,
     }
   end
+
+  # Marks topics that embed a ballot, for the icon in topic lists.
+  register_topic_custom_field_type("ballotage", :boolean)
+  add_preloaded_topic_list_custom_field("ballotage")
+  add_to_serializer(
+    :topic_list_item,
+    :ballotage,
+    include_condition: -> { object.custom_fields["ballotage"] },
+  ) { true }
 
   on(:post_created) { |post| Ballotage::Ballot.link_to_post(post) }
   on(:post_edited) { |post| Ballotage::Ballot.link_to_post(post) }

@@ -85,7 +85,12 @@ module Ballotage
     # result_visibility, keep_counts. The rules can't be changed afterwards:
     # there is no update endpoint, so nobody can tune them after seeing counts.
     def create
-      zone = ActiveSupport::TimeZone[SiteSetting.ballotage_timezone] || Time.zone
+      # A configured zone wins; otherwise the creator's profile zone, which
+      # Discourse detects from their browser.
+      zone =
+        ActiveSupport::TimeZone[
+          SiteSetting.ballotage_timezone.presence || current_user.user_option&.timezone.to_s
+        ] || Time.zone
       starts_at = parse_in_zone(zone, params[:start_date], params[:start_time].presence || "00:01")
       ends_at = parse_in_zone(zone, params[:end_date], params[:end_time].presence || "23:59")
 

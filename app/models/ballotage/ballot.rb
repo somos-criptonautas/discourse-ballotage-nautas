@@ -57,7 +57,8 @@ module Ballotage
     def self.link_to_post(post)
       ids = post.cooked.to_s.scan(/data-ballot-id="(\d+)"/).flatten.map(&:to_i)
       return if ids.empty? || !Guardian.new(post.user).can_manage_ballotage?
-      where(id: ids, post_id: nil).update_all(post_id: post.id)
+      linked = where(id: ids, post_id: nil).update_all(post_id: post.id)
+      post.topic&.upsert_custom_fields("ballotage" => true) if linked > 0
     end
 
     def self.eligible_user_ids

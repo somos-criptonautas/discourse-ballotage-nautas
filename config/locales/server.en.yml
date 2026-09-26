@@ -5,8 +5,9 @@ en:
     ballotage_oversight_group: "Oversight group: sees (in posts and at /ballotage/manage) who has voted and, after the end, the result. Administrators always have access."
     ballotage_oversight_can_manage: "Allow the oversight group to create, cancel, finalize and delete ballots (otherwise administrators only)."
     ballotage_info_text: "Optional notice shown on /ballotage below the content, e.g. who is eligible to vote. Leave empty to show no notice."
-    ballotage_timezone: "Time zone for ballot start and end times (IANA name, e.g. Europe/Berlin)."
+    ballotage_timezone: "Time zone for ballot start and end times. Automatic: new ballots use their creator's profile time zone, and everyone sees times in their own zone."
   ballotage:
+    timezone_automatic: "Automatic (creator's time zone; everyone sees their own)"
     outcome:
       approved: "Approved"
       rejected: "Rejected"

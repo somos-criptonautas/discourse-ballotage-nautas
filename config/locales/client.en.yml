@@ -4,6 +4,7 @@ en:
       title: "Ballots"
       description: "Secret ballots: the choice you make is never stored, only that you voted."
       view_discussion: "View discussion"
+      topic_list_title: "This topic has a secret ballot"
       embed:
         unavailable: "A secret ballot is attached here. Only eligible members can see it."
       sidebar:
@@ -88,7 +89,8 @@ en:
           start_time: "Time"
           end_time: "Time"
           custom_times: "Set custom times"
-          default_times_hint: "Opens at 00:01 on the start day and closes at 23:59 on the end day."
+          default_times_hint: "Opens at 00:01 on the start day and closes at 23:59 on the end day (%{zone})."
+          times_zone_hint: "Times are in %{zone}."
           rejection_threshold: "Black balls to reject"
           rejection_threshold_hint: "The candidate is rejected when this many black balls are cast."
           approval_rule: "Decision rule"

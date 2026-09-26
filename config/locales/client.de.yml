@@ -4,6 +4,7 @@ de:
       title: "Kugelungen"
       description: "Geheime Abstimmungen: gespeichert wird nur, dass du abgestimmt hast, nie wie."
       view_discussion: "Zur Diskussion"
+      topic_list_title: "Dieses Thema enthält eine geheime Kugelung"
       embed:
         unavailable: "Hier ist eine geheime Kugelung eingebunden. Nur Stimmberechtigte können sie sehen."
       sidebar:
@@ -88,7 +89,8 @@ de:
           start_time: "Uhrzeit"
           end_time: "Uhrzeit"
           custom_times: "Uhrzeiten anpassen"
-          default_times_hint: "Beginn am Starttag um 00:01 Uhr, Ende am Endtag um 23:59 Uhr."
+          default_times_hint: "Beginn am Starttag um 00:01 Uhr, Ende am Endtag um 23:59 Uhr (%{zone})."
+          times_zone_hint: "Uhrzeiten in %{zone}."
           rejection_threshold: "Schwarze Kugeln zur Ablehnung"
           rejection_threshold_hint: "Die Aufnahme ist abgelehnt, sobald so viele schwarze Kugeln abgegeben wurden."
           approval_rule: "Mehrheitsregel"

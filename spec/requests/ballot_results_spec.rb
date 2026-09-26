@@ -66,6 +66,24 @@ RSpec.describe Ballotage::BallotsController do
       expect(response.status).to eq(400)
     end
 
+    it "uses the creator's profile time zone when none is configured" do
+      SiteSetting.ballotage_timezone = ""
+      admin.user_option.update!(timezone: "America/Bogota")
+
+      create({})
+
+      starts_at = Ballotage::Ballot.last.starts_at.in_time_zone("America/Bogota")
+      expect([starts_at.hour, starts_at.min]).to eq([0, 1])
+    end
+
+    it "only accepts real time zones in the setting" do
+      expect { SiteSetting.ballotage_timezone = "Mars/Olympus" }.to raise_error(
+        Discourse::InvalidParameters,
+      )
+      SiteSetting.ballotage_timezone = "America/Lima"
+      expect(SiteSetting.ballotage_timezone).to eq("America/Lima")
+    end
+
     it "records the action in the staff action log" do
       create({})
       expect(UserHistory.where(custom_type: "ballotage_create", acting_user_id: admin.id)).to exist
@@ -120,6 +138,23 @@ RSpec.describe Ballotage::BallotsController do
       hidden.post.topic.update!(category: Fabricate(:private_category, group: Fabricate(:group)))
       get "/ballotage/ballots/#{hidden.id}.json"
       expect(response.status).to eq(404)
+    end
+  end
+
+  describe "topic lists" do
+    it "marks topics that embed a ballot" do
+      marked = Fabricate(:topic)
+      marked.upsert_custom_fields("ballotage" => true)
+      plain = Fabricate(:topic)
+      Fabricate(:post, topic: marked)
+      Fabricate(:post, topic: plain)
+      sign_in(reader)
+
+      get "/latest.json"
+
+      topics = response.parsed_body["topic_list"]["topics"].index_by { |t| t["id"] }
+      expect(topics[marked.id]["ballotage"]).to eq(true)
+      expect(topics[plain.id]).not_to have_key("ballotage")
     end
   end
 

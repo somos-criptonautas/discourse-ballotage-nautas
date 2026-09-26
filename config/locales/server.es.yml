@@ -5,8 +5,9 @@ es:
     ballotage_oversight_group: "Grupo de supervisión: ve (en las publicaciones y en /ballotage/manage) quién ha votado y, al terminar, el resultado. Los administradores siempre tienen acceso."
     ballotage_oversight_can_manage: "Permitir que el grupo de supervisión cree, cancele, finalice y borre votaciones (si no, solo los administradores)."
     ballotage_info_text: "Aviso opcional que se muestra en /ballotage bajo el contenido, p. ej. quién puede votar. Déjalo vacío para no mostrar aviso."
-    ballotage_timezone: "Zona horaria para el inicio y el cierre de las votaciones (nombre IANA, p. ej. Europe/Madrid)."
+    ballotage_timezone: "Zona horaria para el inicio y el cierre de las votaciones. Automática: las nuevas votaciones usan la zona horaria del perfil de quien las crea, y cada persona ve las horas en su propia zona."
   ballotage:
+    timezone_automatic: "Automática (zona de quien crea; cada persona ve la suya)"
     outcome:
       approved: "Aprobada"
       rejected: "Rechazada"

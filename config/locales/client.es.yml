@@ -4,6 +4,7 @@ es:
       title: "Votaciones"
       description: "Votaciones secretas: nunca se guarda tu elección, solo que votaste."
       view_discussion: "Ver la discusión"
+      topic_list_title: "Este tema tiene una votación secreta"
       embed:
         unavailable: "Aquí hay una votación secreta. Solo los miembros habilitados pueden verla."
       sidebar:
@@ -88,7 +89,8 @@ es:
           start_time: "Hora"
           end_time: "Hora"
           custom_times: "Elegir horas"
-          default_times_hint: "Abre a las 00:01 del día de inicio y cierra a las 23:59 del día de cierre."
+          default_times_hint: "Abre a las 00:01 del día de inicio y cierra a las 23:59 del día de cierre (%{zone})."
+          times_zone_hint: "Horas en %{zone}."
           rejection_threshold: "Bolas negras para rechazar"
           rejection_threshold_hint: "La candidatura se rechaza cuando se emiten tantas bolas negras."
           approval_rule: "Regla de decisión"

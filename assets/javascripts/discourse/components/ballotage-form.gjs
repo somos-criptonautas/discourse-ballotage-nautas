@@ -1,6 +1,7 @@
 import Component from "@glimmer/component";
 import { concat } from "@ember/helper";
 import { action } from "@ember/object";
+import { service } from "@ember/service";
 import Form from "discourse/components/form";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
@@ -13,6 +14,9 @@ const VISIBILITIES = ["outcome", "counts", "overseers"];
 
 // Creates a ballot; used by the composer button and the management page.
 export default class BallotageForm extends Component {
+  @service currentUser;
+  @service siteSettings;
+
   formData = {
     kind: "admission",
     rejection_threshold: 1,
@@ -30,6 +34,15 @@ export default class BallotageForm extends Component {
 
   // Switching kind resets visibility to that kind's usual practice:
   // admissions announce only the outcome, proposals their counts too.
+  // Same fallback as the server: configured zone, else the creator's own.
+  get zone() {
+    return (
+      this.siteSettings.ballotage_timezone ||
+      this.currentUser?.user_option?.timezone ||
+      Intl.DateTimeFormat().resolvedOptions().timeZone
+    );
+  }
+
   @action
   async setKind(value, { set }) {
     await set("kind", value);
@@ -141,9 +154,10 @@ export default class BallotageForm extends Component {
         @name="custom_times"
         @title={{i18n "ballotage.manage.form.custom_times"}}
         @type="checkbox"
-        @description={{unless
+        @description={{if
           data.custom_times
-          (i18n "ballotage.manage.form.default_times_hint")
+          (i18n "ballotage.manage.form.times_zone_hint" zone=this.zone)
+          (i18n "ballotage.manage.form.default_times_hint" zone=this.zone)
         }}
         as |field|
       >

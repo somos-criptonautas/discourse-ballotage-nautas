@@ -260,6 +260,13 @@ RSpec.describe Ballotage::Ballot do
       expect(ballot.reload.post_id).to eq(post.id)
     end
 
+    it "flags the topic so topic lists can mark it" do
+      ballot = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+      post = create_post(admin, ballot)
+
+      expect(post.topic.reload.custom_fields["ballotage"]).to eq(true)
+    end
+
     it "ignores posts by members who cannot manage ballots" do
       ballot = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
       create_post(member, ballot)
