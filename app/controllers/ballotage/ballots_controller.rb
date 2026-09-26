@@ -15,27 +15,30 @@ module Ballotage
       render "default/empty"
     end
 
-    # GET /ballotage/current.json — what the voting page shows.
+    # GET /ballotage/current.json — scheduled and running ballots for the
+    # /ballotage page. Empty for members who can neither vote nor oversee.
     def current
-      ballot = Ballot.current
-      can_vote = guardian.can_vote_in_ballotage?
-      visible = ballot && (can_vote || guardian.can_oversee_ballotage?)
+      visible = guardian.can_vote_in_ballotage? || guardian.can_oversee_ballotage?
+      ballots = visible ? Ballot.active.includes(post: :topic).to_a : []
 
       render json: {
-               can_vote: can_vote,
+               can_vote: guardian.can_vote_in_ballotage?,
                can_oversee: guardian.can_oversee_ballotage?,
                # Served here rather than as a client setting so it isn't in the
                # site settings anonymous visitors can read.
                info_text: SiteSetting.ballotage_info_text.presence,
-               ballot:
-                 (
-                   if visible
-                     voter_ballot_json(ballot, has_voted: can_vote && ballot.voted?(current_user))
-                   else
-                     nil
-                   end
-                 ),
+               ballots: ballots.map { |b| ballot_json(b) },
              }
+    end
+
+    # GET /ballotage/ballots/:id.json — one ballot, for the card embedded in a
+    # post. 404 for members who can neither vote nor oversee, so the card
+    # doesn't even reveal the title to them.
+    def show
+      unless guardian.can_vote_in_ballotage? || guardian.can_oversee_ballotage?
+        raise Discourse::NotFound
+      end
+      render json: { ballot: ballot_json(Ballot.find(params[:id])) }
     end
 
     # POST /ballotage/vote — params: ballot_id, choice (black|white)
@@ -52,23 +55,22 @@ module Ballotage
       end
 
       # The response deliberately doesn't echo the choice back.
-      render json: { ballot: voter_ballot_json(ballot.reload, has_voted: true) }
+      render json: { ballot: ballot_json(ballot.reload) }
     end
 
     # GET /ballotage/ballots.json — management page.
     def index
-      # The scheduled/open ballot (at most one) first, then newest start first;
-      # id breaks ties so ballots starting at the same time keep a stable order.
+      # Scheduled/open ballots first, then newest start first; id breaks ties so
+      # ballots starting at the same time keep a stable order.
       ballots =
         Ballot
-          .includes(participations: :user)
+          .includes(post: :topic, participations: :user)
           .order(starts_at: :desc, id: :desc)
           .partition { |b| b.cancellable? }
           .flatten
       render json: {
                can_manage: guardian.can_manage_ballotage?,
-               eligible_count: eligible_count,
-               ballots: ballots.map { |b| manage_ballot_json(b) },
+               ballots: ballots.map { |b| ballot_json(b) },
              }
     end
 
@@ -83,22 +85,15 @@ module Ballotage
         return render_json_error(I18n.t("ballotage.errors.ends_in_past"), status: 422)
       end
 
-      ballot = nil
-      DistributedMutex.synchronize("ballotage_create") do
-        if Ballot.current
-          return render_json_error(I18n.t("ballotage.errors.already_active"), status: 422)
-        end
+      ballot =
+        Ballot.create!(
+          title: params.expect(:title),
+          starts_at: starts_at,
+          ends_at: ends_at,
+          created_by_id: current_user.id,
+        )
 
-        ballot =
-          Ballot.create!(
-            title: params.expect(:title),
-            starts_at: starts_at,
-            ends_at: ends_at,
-            created_by_id: current_user.id,
-          )
-      end
-
-      render json: manage_ballot_json(ballot), status: :created
+      render json: { ballot: ballot_json(ballot) }, status: :created
     end
 
     # POST /ballotage/ballots/:id/cancel — scheduled or running ballots.
@@ -111,7 +106,7 @@ module Ballotage
         end
         ballot.update!(cancelled_at: Time.zone.now)
       end
-      render json: manage_ballot_json(ballot)
+      render json: { ballot: ballot_json(ballot) }
     end
 
     # POST /ballotage/ballots/:id/finalize — irreversibly deletes result and
@@ -122,7 +117,7 @@ module Ballotage
         return render_json_error(I18n.t("ballotage.errors.not_finalizable"), status: 422)
       end
       ballot.finalize!
-      render json: manage_ballot_json(ballot)
+      render json: { ballot: ballot_json(ballot) }
     end
 
     # DELETE /ballotage/ballots/:id — removes a finalized ballot from the list
@@ -139,18 +134,10 @@ module Ballotage
 
     private
 
-    def voter_ballot_json(ballot, has_voted:)
-      {
-        id: ballot.id,
-        title: ballot.title,
-        starts_at: ballot.starts_at,
-        ends_at: ballot.ends_at,
-        state: ballot.state,
-        has_voted: has_voted,
-      }
-    end
-
-    def manage_ballot_json(ballot)
+    # One shape for every view: the post card, /ballotage and the management
+    # list. Voters get their own has_voted; overseers additionally get
+    # participation, and the black/white counts once the ballot is over.
+    def ballot_json(ballot)
       json = {
         id: ballot.id,
         title: ballot.title,
@@ -158,10 +145,18 @@ module Ballotage
         ends_at: ballot.ends_at,
         state: ballot.state,
         finalized: ballot.finalized?,
+        can_vote: guardian.can_vote_in_ballotage?,
+        has_voted: guardian.can_vote_in_ballotage? && ballot.voted?(current_user),
+        post_url: (ballot.post.url if ballot.post && guardian.can_see?(ballot.post)),
+      }
+      return json unless guardian.can_oversee_ballotage?
+
+      json.merge!(
+        can_manage: guardian.can_manage_ballotage?,
         cancellable: ballot.cancellable?,
         finalizable: ballot.finalizable?,
         deletable: ballot.deletable?,
-      }
+      )
       return json if ballot.finalized?
 
       # Participation is visible while the ballot runs; black/white only once it
@@ -171,6 +166,7 @@ module Ballotage
       # surviving users: voter_count always equals black_count + white_count.
       voters = ballot.participations.map(&:user).compact.sort_by { |u| u.username_lower }
       json[:voter_count] = ballot.participations.size
+      json[:eligible_count] = eligible_count
       json[:voters] = voters.map { |u| { id: u.id, username: u.username, name: u.name } }
       if ballot.over?
         json[:black_count] = ballot.black_count
@@ -180,9 +176,9 @@ module Ballotage
     end
 
     def eligible_count
+      return @eligible_count if defined?(@eligible_count)
       group_id = SiteSetting.ballotage_voting_group
-      return nil if group_id.blank?
-      GroupUser.where(group_id: group_id.to_i).count
+      @eligible_count = group_id.blank? ? nil : GroupUser.where(group_id: group_id.to_i).count
     end
 
     def parse_in_zone(zone, date, time)

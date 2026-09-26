@@ -11,7 +11,7 @@ enabled_site_setting :ballotage_enabled
 
 register_asset "stylesheets/ballotage.scss"
 
-%w[calendar-days check circle-info clock lock trash-can].each { |i| register_svg_icon i }
+%w[calendar-days check check-to-slot circle-info clock comment list-check lock plus trash-can xmark].each { |i| register_svg_icon i }
 
 module ::Ballotage
   PLUGIN_NAME = "discourse-ballotage-nautas"
@@ -26,4 +26,18 @@ after_initialize do
   require_relative "lib/ballotage/guardian_extension"
 
   reloadable_patch { Guardian.prepend(Ballotage::GuardianExtension) }
+
+  # Drives the composer button, the sidebar link and its badge.
+  add_to_serializer(:current_user, :ballotage) do
+    {
+      can_vote: scope.can_vote_in_ballotage?,
+      can_oversee: scope.can_oversee_ballotage?,
+      can_manage: scope.can_manage_ballotage?,
+      pending_count:
+        scope.can_vote_in_ballotage? ? Ballotage::Ballot.pending_for(object).count : 0,
+    }
+  end
+
+  on(:post_created) { |post| Ballotage::Ballot.link_to_post(post) }
+  on(:post_edited) { |post| Ballotage::Ballot.link_to_post(post) }
 end

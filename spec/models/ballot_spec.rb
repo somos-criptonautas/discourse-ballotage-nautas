@@ -204,30 +204,66 @@ RSpec.describe Ballotage::Ballot do
     end
   end
 
-  describe ".current" do
-    it "returns nil when there is no scheduled or open ballot" do
-      expect(Ballotage::Ballot.current).to be_nil
+  describe ".active" do
+    it "is empty when there is no scheduled or open ballot" do
+      expect(Ballotage::Ballot.active).to be_empty
     end
 
-    it "returns a scheduled ballot" do
-      ballot = build_ballot(starts_at: 1.hour.from_now, ends_at: 2.hours.from_now)
-      expect(Ballotage::Ballot.current).to eq(ballot)
+    it "returns scheduled and open ballots, soonest first" do
+      scheduled = build_ballot(starts_at: 1.hour.from_now, ends_at: 2.hours.from_now)
+      open = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+      expect(Ballotage::Ballot.active).to eq([open, scheduled])
     end
 
-    it "returns an open ballot" do
-      ballot = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
-      expect(Ballotage::Ballot.current).to eq(ballot)
-    end
-
-    it "does not return an ended ballot" do
+    it "excludes ended and cancelled ballots" do
       build_ballot(starts_at: 2.hours.ago, ends_at: 1.hour.ago)
-      expect(Ballotage::Ballot.current).to be_nil
+      cancelled = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+      cancelled.update!(cancelled_at: Time.zone.now)
+      expect(Ballotage::Ballot.active).to be_empty
+    end
+  end
+
+  describe ".pending_for" do
+    fab!(:member, :user)
+
+    it "returns open ballots the user has not voted in" do
+      voted = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+      pending = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+      build_ballot(starts_at: 1.hour.from_now, ends_at: 2.hours.from_now)
+      voted.cast_vote!(member, "white")
+
+      expect(Ballotage::Ballot.pending_for(member)).to eq([pending])
+    end
+  end
+
+  describe ".link_to_post" do
+    fab!(:admin)
+    fab!(:member) { Fabricate(:user, trust_level: TrustLevel[1], refresh_auto_groups: true) }
+
+    before { SiteSetting.ballotage_enabled = true }
+
+    def create_post(user, ballot)
+      PostCreator.create!(
+        user,
+        title: "Ballot topic #{SecureRandom.hex(4)}",
+        raw: "Please vote.\n\n[ballotage id=#{ballot.id}]\n[/ballotage]",
+      )
     end
 
-    it "does not return a cancelled ballot even if still within its window" do
+    it "links an embedded ballot to a manager's post, once" do
       ballot = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
-      ballot.update!(cancelled_at: Time.zone.now)
-      expect(Ballotage::Ballot.current).to be_nil
+      post = create_post(admin, ballot)
+      expect(post.cooked).to include(%(data-ballot-id="#{ballot.id}"))
+      expect(ballot.reload.post_id).to eq(post.id)
+
+      create_post(admin, ballot)
+      expect(ballot.reload.post_id).to eq(post.id)
+    end
+
+    it "ignores posts by members who cannot manage ballots" do
+      ballot = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+      create_post(member, ballot)
+      expect(ballot.reload.post_id).to be_nil
     end
   end
 end

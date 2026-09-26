@@ -15,7 +15,21 @@
 Forked from upstream `v1.0.0-2-g753691d`. Kept up to date with every change in this fork:
 
 - **Plugin name** is `discourse-ballotage-nautas` (install path, `PLUGIN_NAME`, JS module
-  paths). Settings, tables and routes are unchanged, so data is compatible with upstream.
+  paths). Settings, tables and routes are kept; one column is added (`post_id`), so
+  upstream data migrates forward cleanly.
+- **Ballots live in posts.** `[ballotage id=N]…[/ballotage]` embeds a live ballot card in
+  any post; a composer button ("Insert secret ballot") creates the ballot and inserts the
+  tag. The first manager's post embedding a ballot is linked to it (`post_id`).
+- **Several ballots at once** — upstream allows only one scheduled/open ballot site-wide.
+- **Native UI:** one ballot card (core buttons, colour variables, poll-like layout) used in
+  posts, on `/ballotage` and on `/ballotage/manage`; the pages use core page headers,
+  empty states and a FormKit create form in a modal. Managers can cancel/finalize/delete
+  straight from the card.
+- **Sidebar link** "Ballots" (in the Community section's *More* drawer) for voters and
+  overseers, with a badge counting open ballots you haven't voted in.
+- **API:** `GET /ballotage/ballots/:id.json` (card data, 404 for non-eligible members);
+  `/ballotage/current.json` returns `ballots: [...]` instead of a single `ballot`; create,
+  cancel and finalize respond with `{ ballot: ... }`.
 - **Input validation:** `POST /ballotage/vote` returns 400 (not 500) for a non-scalar
   `ballot_id`/`choice`; ballot creation returns 400 for impossible dates or times
   (e.g. `2026-13-01`, `2026-02-31`, `24:00`) instead of a 500 or a silently shifted date.
@@ -29,11 +43,13 @@ who voted is recorded, but what they voted is not.
 
 ## What it does
 
-- A voting page at `/ballotage` where eligible members cast one vote (black or white) in
-  the currently open ballot. A vote cannot be changed once cast.
-- A management page at `/ballotage/manage` for an oversight group (and admins), showing
-  who has voted while a ballot is running, and the result once it has ended.
-- Only one ballot can be scheduled or open at a time.
+- Ballots are embedded in posts (`[ballotage id=N]`), so the discussion about a candidate
+  or proposal and the vote sit in the same topic. Eligible members cast one vote (black or
+  white) right in the post; a vote cannot be changed once cast.
+- `/ballotage` lists every scheduled or open ballot with a link to its post.
+- The oversight group (and admins) see on the card, and at `/ballotage/manage`, who has
+  voted while a ballot is running, and the result once it has ended.
+- Several ballots can be scheduled or open at the same time.
 - Ballots can be scheduled with a start and end day (default opening/closing times of
   00:01 / 23:59, or custom times), cancelled before they end, and finalized afterwards.
 - Finalizing a ballot irreversibly deletes the result and the list of who voted, leaving
@@ -64,7 +80,7 @@ The database is deliberately structured so that nothing in it links a member to 
   with `update_counters`, which does not touch `updated_at`. The ballot row carries no
   timestamp of the last vote either.
 - **Counts are hidden until the ballot is over.** While a ballot is running, the
-  management page shows the participant list (who has voted) but not the black/white
+  card and management page show the participant list (who has voted) but not the black/white
   counts. Showing both at the same time would let an observer match a new name appearing
   on the list to whichever counter just moved. Once the ballot is over no further votes
   can arrive, so the final counts are shown.
@@ -81,11 +97,13 @@ real time during an open ballot and correlating that with who is known to be vot
 that moment — such access is out of scope for an application-level plugin and needs to be
 handled organizationally (e.g. restrict database/console access during ballots).
 
-## Pages
+## Pages and embedding
 
-- **`/ballotage`** — the voting page. Visible to members of the voting group (to cast a
-  vote) and to the oversight group / admins (to see that a ballot exists, with a link to
-  management).
+- **In a post** — `[ballotage id=N]` + `[/ballotage]` renders the ballot card. Members who
+  can neither vote nor oversee see only a neutral "secret ballot attached" notice; the
+  server returns 404 to them, so not even the title leaks.
+- **`/ballotage`** — all scheduled and open ballots. Visible to members of the voting group
+  (to vote) and to the oversight group / admins (participation, link to management).
 - **`/ballotage/manage`** — the management page. Visible to the oversight group (if
   `ballotage_oversight_can_manage` is enabled, they can also create, cancel and finalize
   ballots) and to admins, who always have full access.
@@ -135,16 +153,19 @@ hooks:
 3. Set `ballotage_timezone` to the time zone your organization schedules ballots in.
 4. Optionally decide whether the oversight group may manage ballots
    (`ballotage_oversight_can_manage`), or leave that to admins only.
-5. Optionally add a link to `/ballotage` to the sidebar or a custom menu link so eligible
-   members can find the voting page.
+5. A "Ballots" link appears for voters and overseers in the sidebar's Community section
+   (under *More*); admins can move it to the main list via the section editor.
 
 ## Usage
 
-- From `/ballotage/manage`, someone with manage permission creates a ballot with a title,
-  a start day and an end day. By default it opens at 00:01 on the start day and closes at
-  23:59 on the end day; check "custom times" to set specific start/end times instead.
-- Only one ballot can be scheduled or open at a time — the form is hidden while one is
-  active.
+- Someone with manage permission writes a post (e.g. the candidate's introduction or a
+  feature proposal), opens the composer's ⚙ menu → **Insert secret ballot**, and fills in
+  a title, start day and end day. The ballot is created and its tag inserted into the post.
+  By default it opens at 00:01 on the start day and closes at 23:59 on the end day; check
+  "custom times" to set specific times. **New ballot** on `/ballotage/manage` does the same
+  without a post; paste `[ballotage id=N]` into a post later if wanted.
+- A ballot created from the composer exists even if the post is discarded — cancel it from
+  `/ballotage/manage`.
 - A scheduled or open ballot can be cancelled; votes already cast are kept until the
   ballot is finalized.
 - Once a ballot has ended (or been cancelled), it can be finalized. This is irreversible
@@ -203,19 +224,21 @@ bleibt: Wer direkten Datenbankzugriff hat und die Zähler während einer laufend
 Kugelung live beobachtet, könnte Rückschlüsse ziehen — das lässt sich technisch nicht
 verhindern und muss organisatorisch abgesichert werden (Zugriff einschränken).
 
-**Seiten:** `/ballotage` (Abstimmung für stimmberechtigte Mitglieder) und
-`/ballotage/manage` (Verwaltung für die Aufsichtsgruppe und Admins).
+**Einbindung und Seiten:** Kugelungen werden mit `[ballotage id=N]` in Beiträge
+eingebunden (im Editor über ⚙ → „Geheime Kugelung einfügen“); dort wird direkt abgestimmt.
+Nicht Berechtigte sehen nur einen neutralen Hinweis. `/ballotage` listet alle geplanten
+und laufenden Kugelungen, `/ballotage/manage` ist die Verwaltung für die Aufsichtsgruppe
+und Admins. Für Stimmberechtigte erscheint ein Link „Kugelungen“ in der Seitenleiste.
 
 **Einrichtung:** Plugin per `git clone` in `plugins/` des Discourse-Checkouts einbinden
 und mit `./launcher rebuild app` neu bauen (siehe `app.yml`-Beispiel oben). Danach:
 `ballotage_enabled` aktivieren, Stimmberechtigten-Gruppe (`ballotage_voting_group`) und
 Aufsichtsgruppe (`ballotage_oversight_group`) festlegen, Zeitzone
-(`ballotage_timezone`) prüfen, optional der Aufsichtsgruppe auch die Verwaltung
-erlauben (`ballotage_oversight_can_manage`) und `/ballotage` in der Seitenleiste oder
-einem eigenen Menüpunkt verlinken.
+(`ballotage_timezone`) prüfen und optional der Aufsichtsgruppe auch die Verwaltung
+erlauben (`ballotage_oversight_can_manage`).
 
 **Nutzung:** Eine Kugelung wird mit Titel, Start- und Endtag angelegt (Standardzeiten
-00:01–23:59, individuelle Uhrzeiten optional). Es kann immer nur eine Kugelung gleichzeitig
+00:01–23:59, individuelle Uhrzeiten optional). Mehrere Kugelungen können gleichzeitig
 geplant oder laufend sein. Sie kann vor Ablauf storniert werden; nach Ende (oder
 Stornierung) kann sie finalisiert werden — mit Warnhinweis, da dies unwiderruflich
 Ergebnis und Teilnehmerliste löscht. Finalisierte Kugelungen lassen sich anschließend

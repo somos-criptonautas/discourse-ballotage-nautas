@@ -47,13 +47,10 @@ export function formatRelative(value) {
   return rtf.format(minutes, "minute");
 }
 
-// Share of the ballot period already elapsed, 0–100.
-export function elapsedPercent(startsAt, endsAt) {
-  const start = new Date(startsAt).getTime();
-  const end = new Date(endsAt).getTime();
-  if (!(end > start)) {
+// part / total as a whole-number percentage, clamped to 0–100.
+export function percent(part, total) {
+  if (!(total > 0)) {
     return 0;
   }
-  const pct = ((Date.now() - start) / (end - start)) * 100;
-  return Math.min(100, Math.max(0, Math.round(pct)));
+  return Math.min(100, Math.max(0, Math.round((part / total) * 100)));
 }

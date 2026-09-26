@@ -1,8 +1,19 @@
 de:
   js:
     ballotage:
-      title: "Kugelung"
-      none: "Aktuell findet keine Kugelung statt."
+      title: "Kugelungen"
+      description: "Geheime Abstimmungen: gespeichert wird nur, dass du abgestimmt hast, nie wie."
+      view_discussion: "Zur Diskussion"
+      embed:
+        unavailable: "Hier ist eine geheime Kugelung eingebunden. Nur Stimmberechtigte können sie sehen."
+      sidebar:
+        text: "Kugelungen"
+        title: "Geheime Kugelungen, an denen du teilnehmen kannst"
+      composer:
+        insert: "Geheime Kugelung einfügen"
+        placeholder: "🗳 Geheime Kugelung #%{id} — nach dem Veröffentlichen für Stimmberechtigte sichtbar"
+        intro: "Legt die Kugelung an und fügt sie in deinen Beitrag ein. Nur Mitglieder der Abstimmungsgruppe können abstimmen; die Wahl wird nie gespeichert."
+      none: "Es gibt keine geplanten oder laufenden Kugelungen."
       load_error: "Die Daten konnten nicht geladen werden. Bitte lade die Seite neu."
       period: "%{start} Uhr bis %{end} Uhr"
       choice:
@@ -13,10 +24,9 @@ de:
         confirm_black: "Du stimmst mit SCHWARZ. Diese Entscheidung ist endgültig und kann nicht geändert werden. Fortfahren?"
         confirm_white: "Du stimmst mit WEISS. Diese Entscheidung ist endgültig und kann nicht geändert werden. Fortfahren?"
         done: "Deine Stimme wurde abgegeben. Vielen Dank."
-        done_hint: "Die Stimme ist geheim und kann nicht mehr geändert werden."
         starts_relative: "Beginnt %{relative}"
         ends_relative: "Endet %{relative}"
-        not_started: "Die Abstimmung beginnt am %{start} Uhr."
+        not_started: "Die Abstimmung hat noch nicht begonnen."
         closed: "Die Abstimmung ist beendet."
         not_eligible: "Du bist für diese Kugelung nicht stimmberechtigt."
       state:
@@ -26,13 +36,12 @@ de:
         cancelled: "Storniert"
         completed: "Abgeschlossen"
       manage:
-        title: "Kugelung – Verwaltung"
-        link: "Zur Verwaltung"
-        back: "Zur Abstimmungsseite"
+        title: "Kugelungen verwalten"
+        description: "Beteiligung während der Laufzeit, Ergebnis nach dem Ende."
+        finalized_hint: "Finalisiert: Ergebnis und Liste, wer abgestimmt hat, wurden gelöscht."
+        link: "Kugelungen verwalten"
         forbidden: "Du hast keinen Zugriff auf die Verwaltung."
         new: "Neue Kugelung"
-        one_at_a_time: "Es ist bereits eine Kugelung geplant oder läuft. Eine neue kann erst angelegt werden, wenn diese beendet oder storniert ist."
-        list: "Kugelungen"
         empty: "Es wurden noch keine Kugelungen angelegt."
         participation: "Abgegebene Stimmen: %{voted}"
         participation_of: "Abgegebene Stimmen: %{voted} von %{total}"

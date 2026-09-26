@@ -1,8 +1,19 @@
 en:
   js:
     ballotage:
-      title: "Ballot"
-      none: "There is no ballot at the moment."
+      title: "Ballots"
+      description: "Secret ballots: the choice you make is never stored, only that you voted."
+      view_discussion: "View discussion"
+      embed:
+        unavailable: "A secret ballot is attached here. Only eligible members can see it."
+      sidebar:
+        text: "Ballots"
+        title: "Secret ballots you can vote in"
+      composer:
+        insert: "Insert secret ballot"
+        placeholder: "🗳 Secret ballot #%{id} — shown to eligible members once posted"
+        intro: "Creates the ballot and inserts it into your post. Only members of the voting group can vote; the choice is never stored."
+      none: "There are no scheduled or open ballots."
       load_error: "The data could not be loaded. Please reload the page."
       period: "%{start} to %{end}"
       choice:
@@ -13,10 +24,9 @@ en:
         confirm_black: "You are voting BLACK. This is final and cannot be changed. Continue?"
         confirm_white: "You are voting WHITE. This is final and cannot be changed. Continue?"
         done: "Your vote has been cast. Thank you."
-        done_hint: "Your vote is secret and can no longer be changed."
         starts_relative: "Opens %{relative}"
         ends_relative: "Closes %{relative}"
-        not_started: "Voting opens on %{start}."
+        not_started: "Voting has not opened yet."
         closed: "Voting has ended."
         not_eligible: "You are not eligible to vote in this ballot."
       state:
@@ -26,13 +36,12 @@ en:
         cancelled: "Cancelled"
         completed: "Completed"
       manage:
-        title: "Ballot – management"
-        link: "Go to management"
-        back: "Go to the voting page"
+        title: "Manage ballots"
+        description: "Participation while ballots run, results once they are over."
+        finalized_hint: "Finalized: the result and the list of who voted have been deleted."
+        link: "Manage ballots"
         forbidden: "You do not have access to ballot management."
         new: "New ballot"
-        one_at_a_time: "A ballot is already scheduled or open. A new one can be created once it has ended or been cancelled."
-        list: "Ballots"
         empty: "No ballots have been created yet."
         participation: "Votes cast: %{voted}"
         participation_of: "Votes cast: %{voted} of %{total}"
