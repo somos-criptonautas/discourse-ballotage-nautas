@@ -43,6 +43,11 @@ Forked from upstream `v1.0.0-2-g753691d`. Kept up to date with every change in t
 - **Audit log:** creating, cancelling, finalizing and deleting ballots is recorded in
   *Admin → Logs → Staff actions* (`ballotage_*`).
 - **Spanish** translation.
+- **Time zone** setting is a dropdown of real zones, and empty by default ("automatic"):
+  new ballots use their creator's profile time zone and everyone sees times in their own
+  zone. Upstream defaults to a fixed `Europe/Berlin` text value.
+- **Topic lists** show a small ballot-box icon before the title of topics that embed a
+  ballot (next to core's pinned/closed icons).
 - **API:** `GET /ballotage/ballots/:id.json` (card data, 404 for non-eligible members);
   `/ballotage/current.json` returns `ballots: [...]` instead of a single `ballot`; create,
   cancel and finalize respond with `{ ballot: ... }`.
@@ -137,7 +142,7 @@ handled organizationally (e.g. restrict database/console access during ballots).
 | `ballotage_oversight_group` | *(none)* | Group that can see, at `/ballotage/manage`, who has voted and — after the end — the result. |
 | `ballotage_oversight_can_manage` | `false` | Whether the oversight group may also create, cancel and finalize ballots (otherwise only admins can). |
 | `ballotage_info_text` | *(empty)* | Optional plain-text notice shown below the content on `/ballotage`, e.g. who is eligible. Nothing is shown when empty. |
-| `ballotage_timezone` | `Europe/Berlin` | IANA time zone used for ballot start/end times. |
+| `ballotage_timezone` | *(automatic)* | Time zone for ballot start/end times. Automatic: the creator's profile zone; everyone sees times in their own zone. Pick a zone to force one for everyone. |
 
 ## Permissions
 
@@ -170,7 +175,7 @@ hooks:
 1. Enable the `ballotage_enabled` site setting.
 2. Choose the `ballotage_voting_group` (who may vote) and `ballotage_oversight_group`
    (who oversees ballots).
-3. Set `ballotage_timezone` to the time zone your organization schedules ballots in.
+3. Optionally pick a fixed `ballotage_timezone`; left empty, each ballot uses its creator's time zone.
 4. Optionally decide whether the oversight group may manage ballots
    (`ballotage_oversight_can_manage`), or leave that to admins only.
 5. A "Ballots" link appears for voters and overseers in the sidebar's Community section
@@ -256,7 +261,7 @@ und Admins. Für Stimmberechtigte erscheint ein Link „Kugelungen“ in der Sei
 und mit `./launcher rebuild app` neu bauen (siehe `app.yml`-Beispiel oben). Danach:
 `ballotage_enabled` aktivieren, Stimmberechtigten-Gruppe (`ballotage_voting_group`) und
 Aufsichtsgruppe (`ballotage_oversight_group`) festlegen, Zeitzone
-(`ballotage_timezone`) prüfen und optional der Aufsichtsgruppe auch die Verwaltung
+(`ballotage_timezone`, leer = automatisch) prüfen und optional der Aufsichtsgruppe auch die Verwaltung
 erlauben (`ballotage_oversight_can_manage`).
 
 **Nutzung:** Eine Kugelung wird mit Titel, Start- und Endtag angelegt (Standardzeiten
