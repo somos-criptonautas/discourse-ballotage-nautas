@@ -223,19 +223,6 @@ RSpec.describe Ballotage::Ballot do
     end
   end
 
-  describe ".pending_for" do
-    fab!(:member, :user)
-
-    it "returns open ballots the user has not voted in" do
-      voted = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
-      pending = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
-      build_ballot(starts_at: 1.hour.from_now, ends_at: 2.hours.from_now)
-      voted.cast_vote!(member, "white")
-
-      expect(Ballotage::Ballot.pending_for(member)).to eq([pending])
-    end
-  end
-
   describe ".link_to_post" do
     fab!(:admin)
     fab!(:member) { Fabricate(:user, trust_level: TrustLevel[1], refresh_auto_groups: true) }
@@ -258,6 +245,36 @@ RSpec.describe Ballotage::Ballot do
 
       create_post(admin, ballot)
       expect(ballot.reload.post_id).to eq(post.id)
+    end
+
+    it "tags the topic title with the ballot kind, once, in the author's language" do
+      ballot = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+      post = create_post(admin, ballot)
+      expect(post.topic.reload.title).to start_with("[ADMISSION] Ballot topic")
+
+      proposal = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now, kind: "proposal")
+      SiteSetting.allow_user_locale = true
+      admin.update!(locale: "es")
+      spanish = create_post(admin, proposal)
+      expect(spanish.topic.reload.title).to start_with("[PROPUESTA] Ballot topic")
+    end
+
+    it "doesn't tag a title that already carries the tag" do
+      ballot = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+      post =
+        PostCreator.create!(
+          admin,
+          title: "[ADMISSION] Ana applies to join",
+          raw: "Please vote.\n\n[ballotage id=#{ballot.id}]\n[/ballotage]",
+        )
+      expect(post.topic.reload.title).to eq("[ADMISSION] Ana applies to join")
+    end
+
+    it "flags the topic so topic lists can mark it" do
+      ballot = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+      post = create_post(admin, ballot)
+
+      expect(post.topic.reload.custom_fields["ballotage"]).to eq(true)
     end
 
     it "ignores posts by members who cannot manage ballots" do

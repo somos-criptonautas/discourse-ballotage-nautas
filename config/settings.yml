@@ -14,5 +14,7 @@ plugins:
     default: ""
     textarea: true
   ballotage_timezone:
-    default: "Europe/Berlin"
+    default: ""
+    type: enum
+    enum: "Ballotage::TimezoneEnum"
     client: true

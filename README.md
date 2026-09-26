@@ -25,8 +25,32 @@ Forked from upstream `v1.0.0-2-g753691d`. Kept up to date with every change in t
   posts, on `/ballotage` and on `/ballotage/manage`; the pages use core page headers,
   empty states and a FormKit create form in a modal. Managers can cancel/finalize/delete
   straight from the card.
-- **Sidebar link** "Ballots" (in the Community section's *More* drawer) for voters and
-  overseers, with a badge counting open ballots you haven't voted in.
+- **Ballot kinds and decision rules.** *Admission* (black/white balls; rejected once N
+  black balls are cast) or *Proposal* (approve / reject / abstain; simple majority,
+  two-thirds or unanimous; abstentions count toward quorum only). Optional quorum as a
+  share of the voting group. Rules are set at creation and can't be changed afterwards.
+- **Outcome.** When a ballot ends, "Approved", "Rejected" or "No quorum" and the turnout
+  are frozen on it; the outcome survives finalizing.
+- **Published results** (per ballot): only overseers, the outcome, or the outcome and
+  counts — shown on the card to everyone who can read the post (anonymous visitors of a
+  public topic included), only after the end, never who voted. A ballot that publishes
+  its counts can keep them after finalizing.
+- **Notifications:** eligible members are notified when a ballot opens and, if they
+  haven't voted, about 24 h before it closes; voters are notified when it closes (with
+  the outcome if published). Runs in a scheduled job every 5 minutes.
+- **Audit log:** creating, cancelling, finalizing and deleting ballots is recorded in
+  *Admin → Logs → Staff actions* (`ballotage_*`).
+- **Spanish** translation.
+- **Time zone** setting is a dropdown of real zones, and empty by default ("automatic"):
+  new ballots use their creator's profile time zone and everyone sees times in their own
+  zone. Upstream defaults to a fixed `Europe/Berlin` text value.
+- **Kind tag:** ballots show **[ADMISSION]** or **[PROPOSAL]** before their title (on the
+  card and in notifications), added at display time in each reader's language
+  ([ADMISIÓN] / [PROPUESTA] in Spanish) — never stored in the ballot title. Topics that
+  embed a ballot get the tag prefixed to their **topic** title (in the author's language,
+  once, when the ballot is first linked; skipped if the title already has it).
+- **Topic lists** show a small ballot-box icon before the title of topics that embed a
+  ballot (next to core's pinned/closed icons).
 - **API:** `GET /ballotage/ballots/:id.json` (card data, 404 for non-eligible members);
   `/ballotage/current.json` returns `ballots: [...]` instead of a single `ballot`; create,
   cancel and finalize respond with `{ ballot: ... }`.
@@ -36,10 +60,10 @@ Forked from upstream `v1.0.0-2-g753691d`. Kept up to date with every change in t
 - **Deleted users:** their participation rows are kept, and `voter_count` counts rows,
   so "votes cast" always equals black + white (see *Secrecy model*).
 
-A [Discourse](https://www.discourse.org/) plugin for **secret black/white-ball ballots**
-("ballotage" — in German "Kugelung"), as used by clubs, societies and other membership
-organizations for admitting new members. A member either casts a black or a white ball;
-who voted is recorded, but what they voted is not.
+A [Discourse](https://www.discourse.org/) plugin for **secret ballots** — black/white-ball
+admissions ("ballotage", in German "Kugelung") as used by clubs and membership
+organizations, and approve/reject/abstain votes on proposals. Who voted is recorded, but
+what they voted is not.
 
 ## What it does
 
@@ -52,8 +76,10 @@ who voted is recorded, but what they voted is not.
 - Several ballots can be scheduled or open at the same time.
 - Ballots can be scheduled with a start and end day (default opening/closing times of
   00:01 / 23:59, or custom times), cancelled before they end, and finalized afterwards.
-- Finalizing a ballot irreversibly deletes the result and the list of who voted, leaving
-  only the title, period and status.
+- Each ballot has a kind (admission or proposal), a decision rule, an optional quorum and
+  a result visibility; the outcome is decided and frozen when it ends.
+- Finalizing a ballot irreversibly deletes the list of who voted and (unless it keeps its
+  published counts) the counts, leaving the title, period, status and outcome.
 
 ## Screenshots
 
@@ -87,9 +113,11 @@ The database is deliberately structured so that nothing in it links a member to 
 - **Deleted users.** If a member who voted is deleted, their participation row is kept so
   "votes cast" keeps matching the black/white tally; they just drop off the voter list.
   Finalizing removes those rows like all others.
+- **Published results never include who voted**, and only appear after the end, so
+  publishing doesn't reopen the correlation above.
 - **Finalizing is irreversible.** It deletes the participation rows and zeroes the
-  counters, keeping only the ballot's title, period and status (ended/cancelled). There is
-  no undo.
+  counters (unless the ballot published its counts and chose to keep them), keeping the
+  title, period, status and frozen outcome. There is no undo.
 
 **Honest limits.** This protects against what the application itself reveals. It does not
 protect against someone with direct database access watching the two counters change in
@@ -117,7 +145,7 @@ handled organizationally (e.g. restrict database/console access during ballots).
 | `ballotage_oversight_group` | *(none)* | Group that can see, at `/ballotage/manage`, who has voted and — after the end — the result. |
 | `ballotage_oversight_can_manage` | `false` | Whether the oversight group may also create, cancel and finalize ballots (otherwise only admins can). |
 | `ballotage_info_text` | *(empty)* | Optional plain-text notice shown below the content on `/ballotage`, e.g. who is eligible. Nothing is shown when empty. |
-| `ballotage_timezone` | `Europe/Berlin` | IANA time zone used for ballot start/end times. |
+| `ballotage_timezone` | *(automatic)* | Time zone for ballot start/end times. Automatic: the creator's profile zone; everyone sees times in their own zone. Pick a zone to force one for everyone. |
 
 ## Permissions
 
@@ -150,17 +178,19 @@ hooks:
 1. Enable the `ballotage_enabled` site setting.
 2. Choose the `ballotage_voting_group` (who may vote) and `ballotage_oversight_group`
    (who oversees ballots).
-3. Set `ballotage_timezone` to the time zone your organization schedules ballots in.
+3. Optionally pick a fixed `ballotage_timezone`; left empty, each ballot uses its creator's time zone.
 4. Optionally decide whether the oversight group may manage ballots
    (`ballotage_oversight_can_manage`), or leave that to admins only.
-5. A "Ballots" link appears for voters and overseers in the sidebar's Community section
-   (under *More*); admins can move it to the main list via the section editor.
+5. Add a link to `/ballotage` wherever you like with core's sidebar editing (e.g. a custom
+   link in the Community section, or a custom sidebar section for the voting group).
 
 ## Usage
 
 - Someone with manage permission writes a post (e.g. the candidate's introduction or a
   feature proposal), opens the composer's ⚙ menu → **Insert secret ballot**, and fills in
-  a title, start day and end day. The ballot is created and its tag inserted into the post.
+  the type (admission or proposal), title, start and end day, the rule (black balls to
+  reject / majority), an optional quorum and who sees the result. The ballot is created
+  and its tag inserted into the post.
   By default it opens at 00:01 on the start day and closes at 23:59 on the end day; check
   "custom times" to set specific times. **New ballot** on `/ballotage/manage` does the same
   without a post; paste `[ballotage id=N]` into a post later if wanted.
@@ -169,8 +199,8 @@ hooks:
 - A scheduled or open ballot can be cancelled; votes already cast are kept until the
   ballot is finalized.
 - Once a ballot has ended (or been cancelled), it can be finalized. This is irreversible
-  and permanently deletes the result and the participant list — a confirmation warns
-  about this before proceeding.
+  and permanently deletes the participant list and (unless kept) the counts — a
+  confirmation warns about this before proceeding. The outcome remains.
 - A finalized ballot can then be deleted to remove it from the list entirely. Only
   finalized ballots can be deleted, so a result can never be lost in a single step.
 
@@ -234,7 +264,7 @@ und Admins. Für Stimmberechtigte erscheint ein Link „Kugelungen“ in der Sei
 und mit `./launcher rebuild app` neu bauen (siehe `app.yml`-Beispiel oben). Danach:
 `ballotage_enabled` aktivieren, Stimmberechtigten-Gruppe (`ballotage_voting_group`) und
 Aufsichtsgruppe (`ballotage_oversight_group`) festlegen, Zeitzone
-(`ballotage_timezone`) prüfen und optional der Aufsichtsgruppe auch die Verwaltung
+(`ballotage_timezone`, leer = automatisch) prüfen und optional der Aufsichtsgruppe auch die Verwaltung
 erlauben (`ballotage_oversight_can_manage`).
 
 **Nutzung:** Eine Kugelung wird mit Titel, Start- und Endtag angelegt (Standardzeiten

@@ -21,6 +21,7 @@ register_asset "stylesheets/ballotage.scss"
   list-check
   lock
   plus
+  scale-balanced
   trash-can
   xmark
 ].each { |i| register_svg_icon i }
@@ -30,25 +31,35 @@ module ::Ballotage
 end
 
 require_relative "lib/ballotage/engine"
+# Top level, not after_initialize: the timezone setting's dropdown needs it.
+require_relative "lib/ballotage/timezone_enum"
 
 # Models and controllers under app/ are autoloaded by the engine; routes live in
 # config/routes.rb, which the engine reloads with the route set. Routes drawn
 # from after_initialize are lost on reload and every endpoint 404s.
 after_initialize do
   require_relative "lib/ballotage/guardian_extension"
+  require_relative "lib/ballotage/tick_job"
 
   reloadable_patch { Guardian.prepend(Ballotage::GuardianExtension) }
 
-  # Drives the composer button, the sidebar link and its badge.
+  # Drives the composer button and the /ballotage header actions.
   add_to_serializer(:current_user, :ballotage) do
-    can_vote = scope.can_vote_in_ballotage?
     {
-      can_vote: can_vote,
+      can_vote: scope.can_vote_in_ballotage?,
       can_oversee: scope.can_oversee_ballotage?,
       can_manage: scope.can_manage_ballotage?,
-      pending_count: can_vote ? Ballotage::Ballot.pending_for(object).count : 0,
     }
   end
+
+  # Marks topics that embed a ballot, for the icon in topic lists.
+  register_topic_custom_field_type("ballotage", :boolean)
+  add_preloaded_topic_list_custom_field("ballotage")
+  add_to_serializer(
+    :topic_list_item,
+    :ballotage,
+    include_condition: -> { object.custom_fields["ballotage"] },
+  ) { true }
 
   on(:post_created) { |post| Ballotage::Ballot.link_to_post(post) }
   on(:post_edited) { |post| Ballotage::Ballot.link_to_post(post) }
