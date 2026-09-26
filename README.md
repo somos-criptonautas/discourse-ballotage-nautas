@@ -27,6 +27,22 @@ Forked from upstream `v1.0.0-2-g753691d`. Kept up to date with every change in t
   straight from the card.
 - **Sidebar link** "Ballots" (in the Community section's *More* drawer) for voters and
   overseers, with a badge counting open ballots you haven't voted in.
+- **Ballot kinds and decision rules.** *Admission* (black/white balls; rejected once N
+  black balls are cast) or *Proposal* (approve / reject / abstain; simple majority,
+  two-thirds or unanimous; abstentions count toward quorum only). Optional quorum as a
+  share of the voting group. Rules are set at creation and can't be changed afterwards.
+- **Outcome.** When a ballot ends, "Approved", "Rejected" or "No quorum" and the turnout
+  are frozen on it; the outcome survives finalizing.
+- **Published results** (per ballot): only overseers, the outcome, or the outcome and
+  counts — shown on the card to everyone who can read the post (anonymous visitors of a
+  public topic included), only after the end, never who voted. A ballot that publishes
+  its counts can keep them after finalizing.
+- **Notifications:** eligible members are notified when a ballot opens and, if they
+  haven't voted, about 24 h before it closes; voters are notified when it closes (with
+  the outcome if published). Runs in a scheduled job every 5 minutes.
+- **Audit log:** creating, cancelling, finalizing and deleting ballots is recorded in
+  *Admin → Logs → Staff actions* (`ballotage_*`).
+- **Spanish** translation.
 - **API:** `GET /ballotage/ballots/:id.json` (card data, 404 for non-eligible members);
   `/ballotage/current.json` returns `ballots: [...]` instead of a single `ballot`; create,
   cancel and finalize respond with `{ ballot: ... }`.
@@ -36,10 +52,10 @@ Forked from upstream `v1.0.0-2-g753691d`. Kept up to date with every change in t
 - **Deleted users:** their participation rows are kept, and `voter_count` counts rows,
   so "votes cast" always equals black + white (see *Secrecy model*).
 
-A [Discourse](https://www.discourse.org/) plugin for **secret black/white-ball ballots**
-("ballotage" — in German "Kugelung"), as used by clubs, societies and other membership
-organizations for admitting new members. A member either casts a black or a white ball;
-who voted is recorded, but what they voted is not.
+A [Discourse](https://www.discourse.org/) plugin for **secret ballots** — black/white-ball
+admissions ("ballotage", in German "Kugelung") as used by clubs and membership
+organizations, and approve/reject/abstain votes on proposals. Who voted is recorded, but
+what they voted is not.
 
 ## What it does
 
@@ -52,8 +68,10 @@ who voted is recorded, but what they voted is not.
 - Several ballots can be scheduled or open at the same time.
 - Ballots can be scheduled with a start and end day (default opening/closing times of
   00:01 / 23:59, or custom times), cancelled before they end, and finalized afterwards.
-- Finalizing a ballot irreversibly deletes the result and the list of who voted, leaving
-  only the title, period and status.
+- Each ballot has a kind (admission or proposal), a decision rule, an optional quorum and
+  a result visibility; the outcome is decided and frozen when it ends.
+- Finalizing a ballot irreversibly deletes the list of who voted and (unless it keeps its
+  published counts) the counts, leaving the title, period, status and outcome.
 
 ## Screenshots
 
@@ -87,9 +105,11 @@ The database is deliberately structured so that nothing in it links a member to 
 - **Deleted users.** If a member who voted is deleted, their participation row is kept so
   "votes cast" keeps matching the black/white tally; they just drop off the voter list.
   Finalizing removes those rows like all others.
+- **Published results never include who voted**, and only appear after the end, so
+  publishing doesn't reopen the correlation above.
 - **Finalizing is irreversible.** It deletes the participation rows and zeroes the
-  counters, keeping only the ballot's title, period and status (ended/cancelled). There is
-  no undo.
+  counters (unless the ballot published its counts and chose to keep them), keeping the
+  title, period, status and frozen outcome. There is no undo.
 
 **Honest limits.** This protects against what the application itself reveals. It does not
 protect against someone with direct database access watching the two counters change in
@@ -160,7 +180,9 @@ hooks:
 
 - Someone with manage permission writes a post (e.g. the candidate's introduction or a
   feature proposal), opens the composer's ⚙ menu → **Insert secret ballot**, and fills in
-  a title, start day and end day. The ballot is created and its tag inserted into the post.
+  the type (admission or proposal), title, start and end day, the rule (black balls to
+  reject / majority), an optional quorum and who sees the result. The ballot is created
+  and its tag inserted into the post.
   By default it opens at 00:01 on the start day and closes at 23:59 on the end day; check
   "custom times" to set specific times. **New ballot** on `/ballotage/manage` does the same
   without a post; paste `[ballotage id=N]` into a post later if wanted.
@@ -169,8 +191,8 @@ hooks:
 - A scheduled or open ballot can be cancelled; votes already cast are kept until the
   ballot is finalized.
 - Once a ballot has ended (or been cancelled), it can be finalized. This is irreversible
-  and permanently deletes the result and the participant list — a confirmation warns
-  about this before proceeding.
+  and permanently deletes the participant list and (unless kept) the counts — a
+  confirmation warns about this before proceeding. The outcome remains.
 - A finalized ballot can then be deleted to remove it from the list entirely. Only
   finalized ballots can be deleted, so a result can never be lost in a single step.
 
