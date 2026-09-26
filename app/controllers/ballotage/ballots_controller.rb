@@ -5,7 +5,7 @@ module Ballotage
     requires_plugin ::Ballotage::PLUGIN_NAME
     # show serves published results to anyone who can read the post, which may
     # include anonymous visitors of a public topic.
-    requires_login except: :show
+    requires_login except: [:show]
 
     skip_before_action :check_xhr, only: :page
     before_action :ensure_can_oversee, only: :index

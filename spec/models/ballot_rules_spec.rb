@@ -27,7 +27,7 @@ RSpec.describe Ballotage::Ballot do
   end
 
   def notification_labels(user)
-    Notification.where(user_id: user.id).map { |n| JSON.parse(n.data)["display_username"] }
+    Notification.where(user_id: user.id).order(:id).map { |n| JSON.parse(n.data)["display_username"] }
   end
 
   describe "#close!" do
