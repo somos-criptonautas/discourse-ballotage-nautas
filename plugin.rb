@@ -11,7 +11,19 @@ enabled_site_setting :ballotage_enabled
 
 register_asset "stylesheets/ballotage.scss"
 
-%w[calendar-days check check-to-slot circle-info clock comment list-check lock plus trash-can xmark].each { |i| register_svg_icon i }
+%w[
+  calendar-days
+  check
+  check-to-slot
+  circle-info
+  clock
+  comment
+  list-check
+  lock
+  plus
+  trash-can
+  xmark
+].each { |i| register_svg_icon i }
 
 module ::Ballotage
   PLUGIN_NAME = "discourse-ballotage-nautas"
