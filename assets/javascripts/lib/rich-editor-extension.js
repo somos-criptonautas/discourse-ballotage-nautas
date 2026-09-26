@@ -33,10 +33,7 @@ export default {
       if (token.tag !== "div") {
         return false;
       }
-      if (
-        token.nesting === 1 &&
-        token.attrGet("class") === "ballotage-embed"
-      ) {
+      if (token.nesting === 1 && token.attrGet("class") === "ballotage-embed") {
         state.openNode(state.schema.nodes.ballotage, {
           id: token.attrGet("data-ballot-id"),
         });
