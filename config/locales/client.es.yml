@@ -17,6 +17,9 @@ es:
       none: "No hay votaciones programadas ni abiertas."
       load_error: "No se pudieron cargar los datos. Recarga la página."
       period: "%{start} a %{end}"
+      kind_tag:
+        admission: "ADMISIÓN"
+        proposal: "PROPUESTA"
       kind:
         admission: "Admisión (bolas negras/blancas)"
         proposal: "Propuesta (a favor/en contra/abstención)"
@@ -83,8 +86,8 @@ es:
         form:
           kind: "Tipo"
           title: "Título"
-          title_placeholder_admission: "[ADMISIÓN] …"
-          title_placeholder_proposal: "[PROPUESTA] …"
+          title_placeholder_admission: "p. ej. Ana García"
+          title_placeholder_proposal: "p. ej. Activar el chat para miembros"
           start_date: "Día de inicio"
           end_date: "Día de cierre"
           start_time: "Hora"

@@ -46,6 +46,9 @@ Forked from upstream `v1.0.0-2-g753691d`. Kept up to date with every change in t
 - **Time zone** setting is a dropdown of real zones, and empty by default ("automatic"):
   new ballots use their creator's profile time zone and everyone sees times in their own
   zone. Upstream defaults to a fixed `Europe/Berlin` text value.
+- **Kind tag:** ballots show **[ADMISSION]** or **[PROPOSAL]** before their title (on the
+  card and in notifications), added at display time in each reader's language
+  ([ADMISIÓN] / [PROPUESTA] in Spanish) — never stored in the title.
 - **Topic lists** show a small ballot-box icon before the title of topics that embed a
   ballot (next to core's pinned/closed icons).
 - **API:** `GET /ballotage/ballots/:id.json` (card data, 404 for non-eligible members);

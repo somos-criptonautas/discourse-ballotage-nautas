@@ -106,6 +106,12 @@ export default class BallotageCard extends Component {
     );
   }
 
+  // Added when shown, never stored, so every reader sees it in their own
+  // language: [ADMISSION] / [ADMISIÓN], [PROPOSAL] / [PROPUESTA].
+  get kindTag() {
+    return `[${i18n(`ballotage.kind_tag.${this.ballot.kind ?? "admission"}`)}]`;
+  }
+
   get isAdmission() {
     return (this.ballot.kind ?? "admission") === "admission";
   }
@@ -248,7 +254,8 @@ export default class BallotageCard extends Component {
               id="ballotage-card-title-{{this.ballot.id}}"
             >
               {{dIcon "check-to-slot"}}
-              <span>{{this.ballot.title}}</span>
+              <span><span class="ballotage-card__kind">{{this.kindTag}}</span>
+                {{this.ballot.title}}</span>
             </h3>
             <span
               class="ballotage-status ballotage-status--{{this.ballot.state}}"

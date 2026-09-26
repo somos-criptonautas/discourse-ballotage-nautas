@@ -17,6 +17,9 @@ de:
       none: "Es gibt keine geplanten oder laufenden Kugelungen."
       load_error: "Die Daten konnten nicht geladen werden. Bitte lade die Seite neu."
       period: "%{start} Uhr bis %{end} Uhr"
+      kind_tag:
+        admission: "AUFNAHME"
+        proposal: "ANTRAG"
       kind:
         admission: "Aufnahme (schwarze/weisse Kugeln)"
         proposal: "Antrag (dafür/dagegen/Enthaltung)"
@@ -83,8 +86,8 @@ de:
         form:
           kind: "Art"
           title: "Titel"
-          title_placeholder_admission: "[AUFNAHME] …"
-          title_placeholder_proposal: "[ANTRAG] …"
+          title_placeholder_admission: "z. B. Ana García"
+          title_placeholder_proposal: "z. B. Chat für Mitglieder aktivieren"
           start_date: "Starttag"
           end_date: "Endtag"
           start_time: "Uhrzeit"

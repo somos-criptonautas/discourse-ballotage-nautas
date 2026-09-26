@@ -90,6 +90,12 @@ RSpec.describe Ballotage::Ballot do
       closed_ballot(%w[white], result_visibility: "overseers")
       expect(notification_labels(voters[0]).last).not_to include("Approved")
     end
+
+    it "tags the notification title with the ballot kind" do
+      closed_ballot(%w[white], kind: "proposal")
+      data = JSON.parse(Notification.where(user_id: voters[0].id).last.data)
+      expect(data["topic_title"]).to eq("[PROPOSAL] Ballot")
+    end
   end
 
   describe "#cast_vote!" do

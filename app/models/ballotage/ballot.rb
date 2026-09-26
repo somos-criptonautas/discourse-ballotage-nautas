@@ -245,13 +245,16 @@ module Ballotage
       User
         .where(id: user_ids)
         .find_each do |user|
-          label =
+          label, tagged_title =
             I18n.with_locale(user.effective_locale) do
-              I18n.t(
-                "ballotage.notifications.#{event}",
-                outcome: outcome_label_for(user),
-                count: (ends_at - Time.zone.now).fdiv(1.hour).ceil,
-              )
+              [
+                I18n.t(
+                  "ballotage.notifications.#{event}",
+                  outcome: outcome_label_for(user),
+                  count: (ends_at - Time.zone.now).fdiv(1.hour).ceil,
+                ),
+                "[#{I18n.t("ballotage.kind_tag.#{kind}")}] #{title}",
+              ]
             end
           Notification.create!(
             notification_type: Notification.types[:custom],
@@ -261,7 +264,7 @@ module Ballotage
             data: {
               message: "ballotage.notification",
               display_username: label,
-              topic_title: title,
+              topic_title: tagged_title,
             }.to_json,
           )
         end

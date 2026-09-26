@@ -7,6 +7,9 @@ de:
     ballotage_info_text: "Optionaler Hinweistext, der auf /ballotage unter dem Inhalt angezeigt wird, z. B. wer stimmberechtigt ist. Leer lassen, um keinen Hinweis anzuzeigen."
     ballotage_timezone: "Zeitzone für Beginn und Ende einer Kugelung. Automatisch: neue Kugelungen verwenden die Profil-Zeitzone der anlegenden Person, und alle sehen die Zeiten in ihrer eigenen Zone."
   ballotage:
+    kind_tag:
+      admission: "AUFNAHME"
+      proposal: "ANTRAG"
     timezone_automatic: "Automatisch (Zeitzone der anlegenden Person; alle sehen ihre eigene)"
     outcome:
       approved: "Angenommen"
