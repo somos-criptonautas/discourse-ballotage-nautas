@@ -1,5 +1,7 @@
 # discourse-ballotage-nautas
 
+**ENGLISH** | [ESPAÑOL](README.es.md) | [DEUTSCH](README.de.md)
+
 [![Discourse Plugin](https://github.com/somos-criptonautas/discourse-ballotage-nautas/actions/workflows/discourse-plugin.yml/badge.svg)](https://github.com/somos-criptonautas/discourse-ballotage-nautas/actions/workflows/discourse-plugin.yml)
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
 [![Discourse 2026.7+](https://img.shields.io/badge/Discourse-2026.7%2B-blue?logo=discourse)](https://www.discourse.org/)
@@ -40,7 +42,7 @@ Forked from upstream `v1.0.0-2-g753691d`. Kept up to date with every change in t
   the outcome if published). Runs in a scheduled job every 5 minutes.
 - **Audit log:** creating, cancelling, finalizing and deleting ballots is recorded in
   *Admin → Logs → Staff actions* (`ballotage_*`).
-- **Spanish** translation.
+- **Spanish** translation, and READMEs in [Spanish](README.es.md) and [German](README.de.md).
 - **Time zone** setting is a dropdown of real zones, and empty by default ("automatic"):
   new ballots use their creator's profile time zone and everyone sees times in their own
   zone. Upstream defaults to a fixed `Europe/Berlin` text value.
@@ -231,48 +233,6 @@ later.
 
 GPL-3.0. See [LICENSE](LICENSE). Original work © DaniW42; fork modifications © Criptonautas.
 
----
-
-## Deutsch
-
-**discourse-ballotage-nautas** (ein Fork von
-[DaniW42/discourse-ballotage](https://github.com/DaniW42/discourse-ballotage)) ist ein Discourse-Plugin für geheime Kugelungen (Abstimmungen mit
-schwarzen/weissen Kugeln), wie sie z. B. Vereine, Gesellschaften und andere
-Mitgliedsorganisationen zur Aufnahme neuer Mitglieder einsetzen. Jedes stimmberechtigte
-Mitglied gibt genau eine Stimme (Schwarz oder Weiss) ab; dass es abgestimmt hat, wird
-erfasst — was es gestimmt hat, nicht.
-
-**Geheimhaltung:** In der Datenbank gibt es keine Verknüpfung zwischen Mitglied und
-Stimme. Die Teilnahme-Tabelle speichert nur, wer teilgenommen hat, ohne Stimme und ohne
-Zeitstempel; zwei anonyme Zähler (Schwarz/Weiss) auf der Kugelung selbst führen ebenfalls
-keine Zeitstempel. Solange eine Kugelung läuft, zeigt die Verwaltungsseite, wer
-abgestimmt hat, aber nicht den Zwischenstand — sonst liesse sich ein neu erscheinender
-Name mit dem gerade veränderten Zähler in Verbindung bringen. Nach Ende der Kugelung wird
-das Ergebnis angezeigt. Beim Finalisieren werden Ergebnis und Teilnehmerliste
-unwiderruflich gelöscht; erhalten bleiben nur Titel, Zeitraum und Status. Zu beachten
-bleibt: Wer direkten Datenbankzugriff hat und die Zähler während einer laufenden
-Kugelung live beobachtet, könnte Rückschlüsse ziehen — das lässt sich technisch nicht
-verhindern und muss organisatorisch abgesichert werden (Zugriff einschränken).
-
-**Einbindung und Seiten:** Kugelungen werden mit `[ballotage id=N]` in Beiträge
-eingebunden (im Editor über ⚙ → „Geheime Kugelung einfügen“); dort wird direkt abgestimmt.
-Nicht Berechtigte sehen nur einen neutralen Hinweis. `/ballotage` listet alle geplanten
-und laufenden Kugelungen, `/ballotage/manage` ist die Verwaltung für die Aufsichtsgruppe
-und Admins. Für Stimmberechtigte erscheint ein Link „Kugelungen“ in der Seitenleiste.
-
-**Einrichtung:** Plugin per `git clone` in `plugins/` des Discourse-Checkouts einbinden
-und mit `./launcher rebuild app` neu bauen (siehe `app.yml`-Beispiel oben). Danach:
-`ballotage_enabled` aktivieren, Stimmberechtigten-Gruppe (`ballotage_voting_group`) und
-Aufsichtsgruppe (`ballotage_oversight_group`) festlegen, Zeitzone
-(`ballotage_timezone`, leer = automatisch) prüfen und optional der Aufsichtsgruppe auch die Verwaltung
-erlauben (`ballotage_oversight_can_manage`).
-
-**Nutzung:** Eine Kugelung wird mit Titel, Start- und Endtag angelegt (Standardzeiten
-00:01–23:59, individuelle Uhrzeiten optional). Mehrere Kugelungen können gleichzeitig
-geplant oder laufend sein. Sie kann vor Ablauf storniert werden; nach Ende (oder
-Stornierung) kann sie finalisiert werden — mit Warnhinweis, da dies unwiderruflich
-Ergebnis und Teilnehmerliste löscht. Finalisierte Kugelungen lassen sich anschließend
-ganz aus der Liste löschen.
-
-Erstveröffentlichung, noch nicht im produktiven Langzeiteinsatz erprobt. Voraussetzung:
-Discourse 2026.7 oder neuer. Lizenz: GPL-3.0.
+Documentation: Criptonautas' own text (the fork sections and the Spanish and German
+READMEs) is under [CC BY-NC-SA 4.0](CC-BY-NC-SA-4.0.txt); text inherited from the upstream
+project remains under GPL-3.0, like the code.
