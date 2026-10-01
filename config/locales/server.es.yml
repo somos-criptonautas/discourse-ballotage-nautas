@@ -1,31 +1,31 @@
 es:
   site_settings:
-    ballotage_enabled: "Activar votaciones secretas. Se insertan en publicaciones con [ballotage id=N]; todas las abiertas aparecen en /ballotage."
-    ballotage_voting_group: "Grupo cuyos miembros pueden votar."
-    ballotage_oversight_group: "Grupo de supervisión: ve (en las publicaciones y en /ballotage/manage) quién ha votado y, al terminar, el resultado. Los administradores siempre tienen acceso."
-    ballotage_oversight_can_manage: "Permitir que el grupo de supervisión cree, cancele, finalice y borre votaciones (si no, solo los administradores)."
-    ballotage_info_text: "Aviso opcional que se muestra en /ballotage bajo el contenido, p. ej. quién puede votar. Déjalo vacío para no mostrar aviso."
-    ballotage_timezone: "Zona horaria para el inicio y el cierre de las votaciones. Automática: las nuevas votaciones usan la zona horaria del perfil de quien las crea, y cada persona ve las horas en su propia zona."
+    ballotage_enabled: "Activa las votaciones secretas. Se insertan en las publicaciones con [ballotage id=N] y las abiertas aparecen en /ballotage."
+    ballotage_voting_group: "Grupo que puede votar."
+    ballotage_oversight_group: "Custodios: ven quién votó (en las publicaciones y en /ballotage/manage) y, al cerrar, el resultado. Nunca ven qué votó cada quien. Los administradores siempre tienen acceso."
+    ballotage_oversight_can_manage: "Los custodios también pueden crear, cancelar, finalizar y borrar votaciones (si no, solo los administradores)."
+    ballotage_info_text: "Aviso opcional que aparece en /ballotage, por ejemplo quién puede votar. Déjalo vacío si no quieres mostrar nada."
+    ballotage_timezone: "Zona horaria de las votaciones. En automático, cada votación usa la zona de quien la crea y cada persona ve las horas en la suya."
   ballotage:
     kind_tag:
       admission: "ADMISIÓN"
       proposal: "PROPUESTA"
-    timezone_automatic: "Automática (zona de quien crea; cada persona ve la suya)"
+    timezone_automatic: "Automática (la de quien crea; cada persona ve la suya)"
     outcome:
       approved: "Aprobada"
       rejected: "Rechazada"
       no_quorum: "Sin quórum"
     notifications:
-      opened: "Votación secreta abierta — emite tu voto"
+      opened: "Se abrió una votación secreta: tu voto cuenta"
       reminder:
-        one: "La votación cierra en 1 hora aprox. — aún no has votado"
-        other: "La votación cierra en %{count} horas aprox. — aún no has votado"
-      closed: "Votación cerrada%{outcome}"
+        one: "Queda 1 hora para votar y todavía no votaste"
+        other: "Quedan unas %{count} horas para votar y todavía no votaste"
+      closed: "La votación cerró%{outcome}"
     errors:
-      ends_before_starts: "debe ser posterior al inicio"
-      ends_in_past: "El cierre de la votación ya ha pasado."
+      ends_before_starts: "tiene que ser después del inicio"
+      ends_in_past: "La fecha de cierre ya pasó."
       not_open: "Esta votación no está abierta."
-      already_voted: "Ya has votado. Un voto no se puede cambiar."
-      not_cancellable: "Solo se pueden cancelar votaciones programadas o abiertas."
-      not_deletable: "Solo se pueden borrar votaciones finalizadas."
-      not_finalizable: "Solo se pueden finalizar votaciones terminadas o canceladas."
+      already_voted: "Ya votaste. El voto no se puede cambiar."
+      not_cancellable: "Solo puedes cancelar votaciones programadas o abiertas."
+      not_deletable: "Solo puedes borrar votaciones finalizadas."
+      not_finalizable: "Solo puedes finalizar votaciones cerradas o canceladas."
