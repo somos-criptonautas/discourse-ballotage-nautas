@@ -38,6 +38,11 @@ require_relative "lib/ballotage/timezone_enum"
 # config/routes.rb, which the engine reloads with the route set. Routes drawn
 # from after_initialize are lost on reload and every endpoint 404s.
 after_initialize do
+  # Keeps the vote choice out of the request log, which also records IP and
+  # user. Appended in place: env_config holds this very array once the first
+  # request has built it, so `+=` (a new array) could be silently ignored.
+  Rails.application.config.filter_parameters << :choice
+
   require_relative "lib/ballotage/guardian_extension"
   require_relative "lib/ballotage/tick_job"
 

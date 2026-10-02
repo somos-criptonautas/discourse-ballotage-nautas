@@ -73,6 +73,7 @@ de:
         participation_of: "Abgegebene Stimmen: %{voted} von %{total}"
         voters: "Wer hat abgestimmt?"
         result_after_end: "Das Ergebnis wird erst nach dem Ende angezeigt."
+        result_discarded: "Die Kugelung wurde storniert; das Ergebnis wurde verworfen."
         cancel: "Stornieren"
         confirm_cancel: "Soll die Kugelung „%{title}“ storniert werden? Es kann danach nicht mehr abgestimmt werden."
         delete: "Löschen"

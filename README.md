@@ -110,8 +110,9 @@ The database is deliberately structured so that nothing in it links a member to 
 - **Counts are hidden until the ballot is over.** While a ballot is running, the
   card and management page show the participant list (who has voted) but not the black/white
   counts. Showing both at the same time would let an observer match a new name appearing
-  on the list to whichever counter just moved. Once the ballot is over no further votes
-  can arrive, so the final counts are shown.
+  on the list to whichever counter just moved. Once the ballot has ended no further votes
+  can arrive, so the final counts are shown. Cancelling discards the counts instead —
+  otherwise a manager could cancel right after a single vote and read it.
 - **Deleted users.** If a member who voted is deleted, their participation row is kept so
   "votes cast" keeps matching the black/white tally; they just drop off the voter list.
   Finalizing removes those rows like all others.
@@ -198,8 +199,8 @@ hooks:
   without a post; paste `[ballotage id=N]` into a post later if wanted.
 - A ballot created from the composer exists even if the post is discarded — cancel it from
   `/ballotage/manage`.
-- A scheduled or open ballot can be cancelled; votes already cast are kept until the
-  ballot is finalized.
+- A scheduled or open ballot can be cancelled. Cancelling discards the tally right away,
+  so it is never shown; the list of who voted stays until the ballot is finalized.
 - Once a ballot has ended (or been cancelled), it can be finalized. This is irreversible
   and permanently deletes the participant list and (unless kept) the counts — a
   confirmation warns about this before proceeding. The outcome remains.

@@ -134,14 +134,21 @@ module Ballotage
     end
 
     # POST /ballotage/ballots/:id/cancel — scheduled or running ballots.
-    # Votes already cast are kept until the ballot is finalized.
+    # The tally is discarded in the same lock: otherwise a manager could cancel
+    # right after a single vote and read it. The participant list stays until
+    # the ballot is finalized.
     def cancel
       ballot = Ballot.find(params[:id])
       ballot.with_lock do
         unless ballot.cancellable?
           return render_json_error(I18n.t("ballotage.errors.not_cancellable"), status: 422)
         end
-        ballot.update!(cancelled_at: Time.zone.now)
+        ballot.update!(
+          cancelled_at: Time.zone.now,
+          black_count: 0,
+          white_count: 0,
+          abstain_count: 0,
+        )
       end
       log_action("ballotage_cancel", ballot)
       render json: { ballot: ballot_json(ballot) }
@@ -227,9 +234,10 @@ module Ballotage
       )
       return json if ballot.finalized?
 
-      # Participation is visible while the ballot runs; counts only once it is
-      # over. Showing both live would let someone match a new name on the list
-      # to the counter that just moved.
+      # Participation is visible while the ballot runs; counts only once it has
+      # ended. Showing both live would let someone match a new name on the list
+      # to the counter that just moved. Cancelled ballots never show counts
+      # (cancel zeroes them anyway).
       # Rows of deleted users are kept (see README), so count rows rather than
       # surviving users: voter_count always equals the sum of the counts.
       voters = ballot.participations.map(&:user).compact.sort_by { |u| u.username_lower }
@@ -240,10 +248,11 @@ module Ballotage
     end
 
     # Counts after the end: overseers until finalizing; everyone once an ended
-    # ballot publishes them, and after finalizing only if it keeps them.
+    # ballot publishes them, and after finalizing only if it keeps them. Never
+    # for a cancelled ballot — a manager could cancel right after one vote.
     def counts_visible?(ballot, oversees)
-      return false unless ballot.over?
-      published = ballot.result_visibility == "counts" && ballot.state == "ended"
+      return false unless ballot.state == "ended"
+      published = ballot.result_visibility == "counts"
       return published && ballot.keep_counts if ballot.finalized?
       oversees || published
     end
@@ -274,6 +283,8 @@ module Ballotage
       )
     end
 
+    # Strict: an impossible date or time is a 400, never an exception (500) or
+    # a silent rollover (zone.parse turns 2026-02-30 into 2 March).
     def parse_in_zone(zone, date, time)
       y, m, d = date.to_s.match(/\A(\d{4})-(\d{2})-(\d{2})\z/)&.captures&.map(&:to_i)
       hh, mm = time.to_s.match(/\A(\d{2}):(\d{2})\z/)&.captures&.map(&:to_i)

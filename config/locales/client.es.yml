@@ -73,6 +73,7 @@ es:
         participation_of: "Votos emitidos: %{voted} de %{total}"
         voters: "¿Quién ha votado?"
         result_after_end: "El resultado solo se muestra cuando la votación ha terminado."
+        result_discarded: "La votación se canceló y su resultado se descartó."
         cancel: "Cancelar votación"
         confirm_cancel: "¿Cancelar la votación «%{title}»? No se podrán emitir más votos."
         delete: "Borrar"
