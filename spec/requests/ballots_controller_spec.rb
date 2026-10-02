@@ -373,6 +373,54 @@ RSpec.describe Ballotage::BallotsController do
       expect(response.status).to eq(201)
     end
 
+    it "records the candidate of an admission and shows them on the card" do
+      sign_in(admin)
+
+      post "/ballotage/ballots.json",
+           params: {
+             title: "Ana",
+             start_date: start_date,
+             end_date: end_date,
+             subject_username: plain_user.username,
+           }
+
+      expect(response.status).to eq(201)
+      expect(response.parsed_body.dig("ballot", "subject_user", "username")).to eq(
+        plain_user.username,
+      )
+      expect(Ballotage::Ballot.last.subject_user).to eq(plain_user)
+    end
+
+    it "rejects a candidate on a proposal and an unknown candidate" do
+      sign_in(admin)
+      params = { title: "Chat", start_date: start_date, end_date: end_date }
+
+      post "/ballotage/ballots.json",
+           params: params.merge(kind: "proposal", subject_username: plain_user.username)
+      expect(response.status).to eq(422)
+
+      post "/ballotage/ballots.json", params: params.merge(subject_username: "nobody-here")
+      expect(response.status).to eq(400)
+
+      expect(Ballotage::Ballot.count).to eq(0)
+    end
+
+    it "announces the new ballot" do
+      sign_in(admin)
+
+      events =
+        DiscourseEvent.track_events(:ballotage_ballot_created) do
+          post "/ballotage/ballots.json",
+               params: {
+                 title: "Ana",
+                 start_date: start_date,
+                 end_date: end_date,
+               }
+        end
+
+      expect(events.sole[:params]).to eq([Ballotage::Ballot.last])
+    end
+
     it "defaults start and end times to 00:01 and 23:59 in the configured time zone" do
       freeze_time
       sign_in(admin)

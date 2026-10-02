@@ -29,3 +29,11 @@ en:
       not_cancellable: "Only scheduled or open ballots can be cancelled."
       not_deletable: "Only finalized ballots can be deleted."
       not_finalizable: "Only ended or cancelled ballots can be finalized."
+      subject_only_for_admission: "can only be set for admission ballots"
+    workflows:
+      unknown_operation: "Unknown ballot operation: %{operation}"
+      invalid_parameter: "Invalid ballot parameter: %{name}"
+      not_allowed: "%{username} may not do this with secret ballots."
+      ballot_not_found: "Ballot %{id} not found."
+      embed_failed: "Ballot %{id} was created but couldn't be posted: %{errors}"
+      not_open: "Ballot %{id} is not open."

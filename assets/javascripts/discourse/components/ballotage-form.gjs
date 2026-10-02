@@ -1,10 +1,11 @@
 import Component from "@glimmer/component";
-import { concat } from "@ember/helper";
+import { concat, hash } from "@ember/helper";
 import { action } from "@ember/object";
 import { service } from "@ember/service";
 import Form from "discourse/components/form";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
+import UserChooser from "discourse/select-kit/components/user-chooser";
 import { eq } from "discourse/truth-helpers";
 import { i18n } from "discourse-i18n";
 import { isoDateFromToday } from "../lib/ballotage-format";
@@ -27,6 +28,7 @@ export default class BallotageForm extends Component {
     result_visibility: "outcome",
     keep_counts: false,
     title: "",
+    subject_username: [],
     start_date: isoDateFromToday(1),
     end_date: isoDateFromToday(7),
     custom_times: false,
@@ -64,6 +66,9 @@ export default class BallotageForm extends Component {
       keep_counts: data.result_visibility === "counts" && !!data.keep_counts,
     };
     if (data.kind === "admission") {
+      if (data.subject_username?.length) {
+        payload.subject_username = data.subject_username[0];
+      }
       if (data.rejection_mode === "percent") {
         payload.rejection_percent = data.rejection_percent;
       } else {
@@ -130,6 +135,25 @@ export default class BallotageForm extends Component {
           }}
         />
       </form.Field>
+
+      {{#if (eq data.kind "admission")}}
+        <form.Field
+          @name="subject_username"
+          @title={{i18n "ballotage.manage.form.subject_user"}}
+          @description={{i18n "ballotage.manage.form.subject_user_hint"}}
+          @type="custom"
+          @format="full"
+          as |field|
+        >
+          <field.Control>
+            <UserChooser
+              @value={{field.value}}
+              @onChange={{field.set}}
+              @options={{hash maximum=1 excludeCurrentUser=false}}
+            />
+          </field.Control>
+        </form.Field>
+      {{/if}}
 
       <form.Row as |row|>
         <row.Col @size={{6}}>

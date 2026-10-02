@@ -23,6 +23,7 @@ register_asset "stylesheets/ballotage.scss"
   plus
   scale-balanced
   trash-can
+  user
   xmark
 ].each { |i| register_svg_icon i }
 
@@ -47,6 +48,14 @@ after_initialize do
   require_relative "lib/ballotage/tick_job"
 
   reloadable_patch { Guardian.prepend(Ballotage::GuardianExtension) }
+
+  # Discourse Workflows: a ballot lifecycle trigger and a ballot action. Only
+  # when Workflows is installed; it stops when this plugin is disabled.
+  if respond_to?(:register_discourse_workflows_node)
+    register_discourse_workflows_node do
+      [DiscourseWorkflows::Nodes::BallotChanged::V1, DiscourseWorkflows::Nodes::Ballot::V1]
+    end
+  end
 
   # Drives the composer button and the /ballotage header actions.
   add_to_serializer(:current_user, :ballotage) do
