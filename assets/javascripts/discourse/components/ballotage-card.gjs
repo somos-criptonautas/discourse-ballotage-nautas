@@ -273,6 +273,16 @@ export default class BallotageCard extends Component {
               <span>{{dIcon "clock"}} {{this.timeHint}}</span>
             {{/if}}
             <span>{{dIcon "scale-balanced"}} {{this.ruleSummary}}</span>
+            {{#if this.ballot.subject_user}}
+              <span class="ballotage-card__candidate">
+                {{dIcon "user"}}
+                {{i18n "ballotage.candidate"}}
+                <a
+                  href="/u/{{this.ballot.subject_user.username}}"
+                  data-user-card={{this.ballot.subject_user.username}}
+                >@{{this.ballot.subject_user.username}}</a>
+              </span>
+            {{/if}}
           </p>
         </header>
 

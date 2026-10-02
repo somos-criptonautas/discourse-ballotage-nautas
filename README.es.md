@@ -25,6 +25,13 @@ negras/blancas y **propuestas** con A favor / En contra / Abstención. Solo se g
   también el recuento — nunca quién votó.
 - **Notificaciones** al abrir, 24 h antes del cierre (a quien aún no votó) y al cerrar.
   Crear, cancelar, finalizar y borrar queda registrado en el registro de acciones del staff.
+- **Candidato:** una admisión puede indicar el miembro sobre el que se vota (selector
+  opcional al crearla; se muestra en la tarjeta).
+- **Discourse Workflows:** si está instalado, ofrece el disparador *Votación cambió*
+  (creada, abierta, por cerrar, cerrada, cancelada, finalizada; filtros por tipo,
+  resultado, categoría y etiquetas) y la acción *Votación secreta* (crear, consultar,
+  listar, cancelar, finalizar, listar quién no votó) con los mismos permisos que la web.
+  Sin disparador por voto y sin recuento antes de que se publique: el secreto se mantiene.
 - **Páginas:** `/ballotage` lista las votaciones programadas y abiertas (arriba a la
   derecha: «Gestionar votaciones» y «Nueva votación» para quien tenga permiso);
   `/ballotage/manage` es la gestión para la supervisión y los administradores. El enlace en

@@ -14,12 +14,22 @@ module Ballotage
     # who can read the post (outcome + turnout), or also the counts.
     VISIBILITIES = %w[overseers outcome counts].freeze
     REMINDER_BEFORE = 24.hours
+    # Lifecycle changes announced as DiscourseEvent :ballotage_ballot_<change>,
+    # with the ballot as argument. There is deliberately no event per vote:
+    # its timing next to the counters would reveal the choice.
+    CHANGES = %w[created opened closing_soon closed cancelled finalized].freeze
 
     class AlreadyVoted < StandardError
     end
 
+    # A lifecycle step that isn't allowed in the ballot's current state; the
+    # message is user-facing.
+    class InvalidState < StandardError
+    end
+
     has_many :participations, class_name: "Ballotage::Participation", dependent: :delete_all
     belongs_to :post, optional: true
+    belongs_to :subject_user, class_name: "User", optional: true
 
     validates :title, presence: true, length: { maximum: 255 }
     validates :starts_at, presence: true
@@ -43,6 +53,7 @@ module Ballotage
               },
               allow_nil: true
     validate :ends_after_starts
+    validate :subject_only_for_admission
 
     scope :not_cancelled, -> { where(cancelled_at: nil) }
 
@@ -200,14 +211,29 @@ module Ballotage
           )
           true
         end
-      notify(participations.pluck(:user_id), "closed") if closed
+      if closed
+        notify(participations.pluck(:user_id), "closed")
+        trigger_event("closed")
+      end
       closed
+    end
+
+    # Stops a scheduled or running ballot. The tally is discarded in the same
+    # lock: otherwise a manager could cancel right after a single vote and read
+    # it. The participant list stays until the ballot is finalized.
+    def cancel!
+      with_lock do
+        raise InvalidState, I18n.t("ballotage.errors.not_cancellable") unless cancellable?
+        update!(cancelled_at: Time.zone.now, black_count: 0, white_count: 0, abstain_count: 0)
+      end
+      trigger_event("cancelled")
     end
 
     # Irreversibly removes the participant list and — unless this ballot
     # published its counts and chose to keep them — the counts. Title, period,
     # status and the frozen outcome remain.
     def finalize!
+      raise InvalidState, I18n.t("ballotage.errors.not_finalizable") unless finalizable?
       close!
       transaction do
         participations.delete_all
@@ -218,23 +244,43 @@ module Ballotage
         end
         update_columns(columns)
       end
+      trigger_event("finalized")
     end
 
     def notify_opened!
       update_columns(opened_notified_at: Time.zone.now)
       notify(self.class.eligible_user_ids, "opened")
+      trigger_event("opened")
     end
 
     def notify_reminder!
       update_columns(reminded_at: Time.zone.now)
       voted = participations.pluck(:user_id)
       notify(self.class.eligible_user_ids - voted, "reminder")
+      trigger_event("closing_soon")
     end
 
     # The outcome as the given viewer may see it: overseers always, everyone
     # else only when the ballot publishes it.
     def outcome_visible_to?(guardian)
       outcome.present? && (result_visibility != "overseers" || guardian.can_oversee_ballotage?)
+    end
+
+    # Whether the counts are public: only an ended ballot that publishes them,
+    # and after finalizing only if it kept them. Never while running or after
+    # cancelling.
+    def counts_published?
+      state == "ended" && result_visibility == "counts" && (!finalized? || keep_counts)
+    end
+
+    def trigger_event(change)
+      DiscourseEvent.trigger(:"ballotage_ballot_#{change}", self)
+    end
+
+    # Shows up in Admin → Logs → Staff actions, so managing ballots is itself
+    # on the record.
+    def log_staff_action(actor, type)
+      StaffActionLogger.new(actor).log_custom(type, ballot_id: id, title: title, kind: kind)
     end
 
     private
@@ -302,6 +348,11 @@ module Ballotage
       ": " + I18n.t("ballotage.outcome.#{outcome}")
     end
 
+    def subject_only_for_admission
+      return if subject_user_id.blank? || kind == "admission"
+      errors.add(:subject_user_id, I18n.t("ballotage.errors.subject_only_for_admission"))
+    end
+
     def ends_after_starts
       return if starts_at.blank? || ends_at.blank?
       errors.add(:ends_at, I18n.t("ballotage.errors.ends_before_starts")) if ends_at <= starts_at
@@ -339,9 +390,11 @@ end
 #  updated_at            :datetime         not null
 #  created_by_id         :bigint           not null
 #  post_id               :bigint
+#  subject_user_id       :bigint
 #
 # Indexes
 #
-#  index_ballotage_ballots_on_ends_at  (ends_at)
-#  index_ballotage_ballots_on_post_id  (post_id)
+#  index_ballotage_ballots_on_ends_at          (ends_at)
+#  index_ballotage_ballots_on_post_id          (post_id)
+#  index_ballotage_ballots_on_subject_user_id  (subject_user_id)
 #

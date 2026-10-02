@@ -42,6 +42,11 @@ Forked from upstream `v1.0.0-2-g753691d`. Kept up to date with every change in t
   the outcome if published). Runs in a scheduled job every 5 minutes.
 - **Audit log:** creating, cancelling, finalizing and deleting ballots is recorded in
   *Admin → Logs → Staff actions* (`ballotage_*`).
+- **Candidate:** an admission can name the member it is about (optional user picker in
+  the create form; shown on the card). Lets automations act on the outcome.
+- **Discourse Workflows:** a *Ballot changed* trigger and a *Secret ballot* action (see
+  [Discourse Workflows](#discourse-workflows)). The plugin also fires
+  `ballotage_ballot_{created,opened,closing_soon,closed,cancelled,finalized}` events.
 - **Spanish** translation, and READMEs in [Spanish](README.es.md) and [German](README.de.md).
 - **Time zone** setting is a dropdown of real zones, and empty by default ("automatic"):
   new ballots use their creator's profile time zone and everyone sees times in their own
@@ -206,6 +211,31 @@ hooks:
   confirmation warns about this before proceeding. The outcome remains.
 - A finalized ballot can then be deleted to remove it from the list entirely. Only
   finalized ballots can be deleted, so a result can never be lost in a single step.
+
+## Discourse Workflows
+
+When [Discourse Workflows](https://meta.discourse.org/t/discourse-workflows/407100) is
+installed, the builder offers two nodes; they stop working when `ballotage_enabled` is off.
+
+- **Ballot changed** (trigger) fires when a ballot is created, opens, has about 24 h left,
+  closes, is cancelled or is finalized. Filters: change, type, outcome, and the category
+  and tags of the topic the ballot is embedded in. The item carries `ballot` (id, title,
+  type, state, period, rules, outcome, turnout), `candidate`, and `topic` / `post` when
+  embedded.
+- **Secret ballot** (action), run as *Performed by user* and held to the same permissions
+  as the web UI: *Create* (optionally posting it as a reply in a topic), *Cancel* and
+  *Finalize* need manage permission; *Get*, *List* and *List members who haven't voted*
+  need oversight. Every change is in the staff action log.
+
+Secrecy holds in workflows too: there is **no per-vote trigger** (its timing next to the
+counters would reveal the choice), counts appear only once an ended ballot publishes
+them, and participation is a number — names only through *List members who haven't
+voted*, which overseers can already see. The outcome is always on the item once a ballot
+closes, even for ballots that show it to overseers only, since only administrators build
+workflows.
+
+Example: *Ballot changed* (closed, admission, approved) → core *Group* action (add
+`={{ $json.candidate.username }}`) → *Send personal message* to the candidate.
 
 ## Development & tests
 
