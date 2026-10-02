@@ -192,6 +192,18 @@ RSpec.describe Ballotage::BallotsController do
       expect(ballot.reload.black_count).to eq(0)
     end
 
+    it "filters the choice from the logged request parameters" do
+      freeze_time
+      ballot = create_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+      sign_in(voter)
+
+      post "/ballotage/vote.json", params: { ballot_id: ballot.id, choice: "black" }
+
+      expect(response.status).to eq(200)
+      expect(request.filtered_parameters["choice"]).to eq("[FILTERED]")
+      expect(request.filtered_parameters["ballot_id"]).to eq(ballot.id.to_s)
+    end
+
     it "rejects a second vote with 422" do
       freeze_time
       ballot = create_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
@@ -272,17 +284,19 @@ RSpec.describe Ballotage::BallotsController do
       expect(entry["white_count"]).to eq(0)
     end
 
-    it "shows black/white counts once the ballot has been cancelled" do
+    it "never shows black/white counts for a cancelled ballot, but keeps participation" do
       freeze_time
       ballot = create_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
-      ballot.update!(cancelled_at: Time.zone.now)
+      Ballotage::Participation.create!(ballot_id: ballot.id, user_id: voter.id)
+      ballot.update!(cancelled_at: Time.zone.now, black_count: 1)
       sign_in(overseer)
 
       get "/ballotage/ballots.json"
 
       entry = response.parsed_body["ballots"].first
-      expect(entry).to have_key("black_count")
-      expect(entry).to have_key("white_count")
+      expect(entry["voter_count"]).to eq(1)
+      expect(entry).not_to have_key("black_count")
+      expect(entry).not_to have_key("white_count")
     end
 
     it "lists voters sorted by username and never includes a choice" do
@@ -464,6 +478,49 @@ RSpec.describe Ballotage::BallotsController do
       expect(response.status).to eq(422)
     end
 
+    it "returns 400 for an impossible month or day" do
+      sign_in(admin)
+
+      post "/ballotage/ballots.json",
+           params: {
+             title: "Bad Date",
+             start_date: "2026-13-45",
+             end_date: end_date,
+           }
+
+      expect(response.status).to eq(400)
+      expect(Ballotage::Ballot.count).to eq(0)
+    end
+
+    it "returns 400 for a day that doesn't exist in that month instead of rolling over" do
+      sign_in(admin)
+
+      post "/ballotage/ballots.json",
+           params: {
+             title: "Bad Date",
+             start_date: "2026-02-30",
+             end_date: end_date,
+           }
+
+      expect(response.status).to eq(400)
+      expect(Ballotage::Ballot.count).to eq(0)
+    end
+
+    it "returns 400 for an impossible time" do
+      sign_in(admin)
+
+      post "/ballotage/ballots.json",
+           params: {
+             title: "Bad Time",
+             start_date: start_date,
+             start_time: "25:99",
+             end_date: end_date,
+           }
+
+      expect(response.status).to eq(400)
+      expect(Ballotage::Ballot.count).to eq(0)
+    end
+
     it "returns 403 for an oversight group member when ballotage_oversight_can_manage is disabled" do
       SiteSetting.ballotage_oversight_can_manage = false
       sign_in(overseer)
@@ -506,7 +563,7 @@ RSpec.describe Ballotage::BallotsController do
       expect(ballot.reload.state).to eq("cancelled")
     end
 
-    it "cancels an open ballot and keeps votes already cast" do
+    it "cancels an open ballot, discarding the tally but keeping the participant list" do
       freeze_time
       ballot = create_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
       ballot.cast_vote!(voter, "black")
@@ -515,9 +572,12 @@ RSpec.describe Ballotage::BallotsController do
       post "/ballotage/ballots/#{ballot.id}/cancel.json"
 
       expect(response.status).to eq(200)
+      expect(response.parsed_body["ballot"]).not_to have_key("black_count")
+      expect(response.parsed_body["ballot"]).not_to have_key("white_count")
       ballot.reload
       expect(ballot.state).to eq("cancelled")
-      expect(ballot.black_count).to eq(1)
+      expect(ballot.black_count).to eq(0)
+      expect(ballot.white_count).to eq(0)
       expect(ballot.participations.count).to eq(1)
     end
 

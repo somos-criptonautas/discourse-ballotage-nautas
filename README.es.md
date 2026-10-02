@@ -35,6 +35,7 @@ negras/blancas y **propuestas** con A favor / En contra / Abstención. Solo se g
 La base de datos no vincula a ningún miembro con su voto: la tabla de participación solo
 registra quién votó (sin marcas de tiempo) y los votos son simples contadores. Mientras la
 votación está abierta, la supervisión ve la participación pero no el recuento.
+Cancelar descarta el recuento en el acto, así que nunca se muestra.
 **Finalizar** borra para siempre la lista de quién votó y — salvo que se decida
 conservarlo — el recuento; quedan el título, el periodo, el estado y el resultado. Quien
 tenga acceso directo a la base de datos podría observar los contadores en vivo; eso debe

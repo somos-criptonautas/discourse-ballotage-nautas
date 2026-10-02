@@ -73,6 +73,7 @@ en:
         participation_of: "Votes cast: %{voted} of %{total}"
         voters: "Who has voted?"
         result_after_end: "The result is shown only after the ballot has ended."
+        result_discarded: "The ballot was cancelled; its result was discarded."
         cancel: "Cancel ballot"
         confirm_cancel: "Cancel the ballot “%{title}”? No further votes can be cast."
         delete: "Delete"

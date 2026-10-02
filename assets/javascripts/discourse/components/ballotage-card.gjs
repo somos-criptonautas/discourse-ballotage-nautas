@@ -6,6 +6,7 @@ import { service } from "@ember/service";
 import { trustHTML } from "@ember/template";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
+import { escapeExpression } from "discourse/lib/utilities";
 import { and, eq, not, or } from "discourse/truth-helpers";
 import DButton from "discourse/ui-kit/d-button";
 import dIcon from "discourse/ui-kit/helpers/d-icon";
@@ -190,7 +191,7 @@ export default class BallotageCard extends Component {
   cancel() {
     this.dialog.yesNoConfirm({
       message: i18n("ballotage.manage.confirm_cancel", {
-        title: this.ballot.title,
+        title: escapeExpression(this.ballot.title),
       }),
       didConfirm: () =>
         this.request(`/ballotage/ballots/${this.ballot.id}/cancel.json`),
@@ -202,7 +203,7 @@ export default class BallotageCard extends Component {
     this.dialog.deleteConfirm({
       title: i18n("ballotage.manage.finalize_title"),
       message: i18n("ballotage.manage.confirm_finalize", {
-        title: this.ballot.title,
+        title: escapeExpression(this.ballot.title),
       }),
       confirmButtonLabel: "ballotage.manage.finalize",
       didConfirm: () =>
@@ -215,7 +216,7 @@ export default class BallotageCard extends Component {
     this.dialog.deleteConfirm({
       title: i18n("ballotage.manage.delete_title"),
       message: i18n("ballotage.manage.confirm_delete", {
-        title: this.ballot.title,
+        title: escapeExpression(this.ballot.title),
       }),
       didConfirm: async () => {
         if (
@@ -385,6 +386,10 @@ export default class BallotageCard extends Component {
               {{else if (not this.over)}}
                 <p class="ballotage-card__hint">{{i18n
                     "ballotage.manage.result_after_end"
+                  }}</p>
+              {{else if (eq this.ballot.state "cancelled")}}
+                <p class="ballotage-card__hint">{{i18n
+                    "ballotage.manage.result_discarded"
                   }}</p>
               {{/if}}
 

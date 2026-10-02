@@ -35,7 +35,8 @@ Gespeichert wird nur, *dass* jemand abgestimmt hat — nie, *wie*.
 
 Keine Datenbank-Verknüpfung zwischen Mitglied und Stimme: die Teilnahme-Tabelle kennt nur,
 wer abgestimmt hat (ohne Zeitstempel), die Stimmen sind nur Zähler. Während der Laufzeit
-sieht die Aufsicht die Teilnahme, aber keinen Zwischenstand. **Finalisieren** löscht
+sieht die Aufsicht die Teilnahme, aber keinen Zwischenstand; eine Stornierung verwirft die
+Stimmenzahlen sofort, sie werden nie angezeigt. **Finalisieren** löscht
 unwiderruflich die Teilnehmerliste und — sofern nicht bewusst behalten — die
 Stimmenzahlen; Titel, Zeitraum, Status und Ergebnis bleiben. Wer direkten
 Datenbankzugriff hat, könnte die Zähler live beobachten; das muss organisatorisch
