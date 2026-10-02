@@ -10,8 +10,8 @@ else, and not a comprehensive security audit. The reviewer also wrote the review
 |---|---|
 | Extension | `discourse-ballotage-nautas`, plugin |
 | Declared version | `1.0.0` (`plugin.rb`) |
-| Candidate | branch `claude/plugin-discourse-workflows-actions-ckevx8`, code commit `3884bde` (`04a0678` adds only `.claude/skills/`); clean tree |
-| Change under focus | `165277d..3884bde`: Workflows trigger and action, candidate field, `BallotCreator`, `Ballot#cancel!`, lifecycle events |
+| Candidate | `main`, code commit `93198f9` (`94f186c` adds only `.claude/skills/`); clean tree |
+| Change under focus | `b7f30c0..93198f9`: Workflows trigger and action, candidate field, `BallotCreator`, `Ballot#cancel!`, lifecycle events |
 | Claimed compatibility | `required_version: 2026.7.0` |
 | Review mode | `integrated_verification`, one target; full scope, emphasis on the change |
 | Environment | Discourse `main` @ `67bc74d0d8` (v2026.10.0-latest), Ruby 3.4.9, PostgreSQL 16 + pgvector 0.8.0, Redis 7.0, Chromium 1194 via Playwright, Ubuntu 24.04 cloud container |
