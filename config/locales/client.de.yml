@@ -120,10 +120,10 @@ de:
         "action:ballot": "Geheime Kugelung"
       node_descriptions:
         "trigger:ballot_changed": "Löst aus, wenn eine Kugelung angelegt, geöffnet, bald beendet, beendet, storniert oder finalisiert wird"
-        "action:ballot": "Kugelungen anlegen, abrufen, auflisten, stornieren oder finalisieren oder auflisten, wer noch nicht abgestimmt hat"
+        "action:ballot": "Kugelungen anlegen, abrufen, auflisten, stornieren oder finalisieren"
       ballot_changed:
         changes: "Änderungen"
-        changes_description: "Leer lassen für jede Änderung."
+        changes_description: "Leer lassen für jede Änderung. „Endet bald“ löst nur bei Kugelungen aus, die länger als 24 Stunden laufen."
         changes_placeholder: "Jede Änderung"
         changes_created: "Angelegt"
         changes_opened: "Geöffnet"
@@ -155,7 +155,6 @@ de:
           list: "Kugelungen auflisten"
           cancel: "Kugelung stornieren"
           finalize: "Kugelung finalisieren"
-          non_voters: "Mitglieder ohne Stimmabgabe auflisten"
         ballot_id: "Kugelungs-ID"
         title: "Titel"
         kind: "Art"

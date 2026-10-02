@@ -120,10 +120,10 @@ en:
         "action:ballot": "Secret ballot"
       node_descriptions:
         "trigger:ballot_changed": "Fires when a secret ballot is created, opens, is about to close, closes, is cancelled or is finalized"
-        "action:ballot": "Create, get, list, cancel or finalize secret ballots, or list who hasn't voted yet"
+        "action:ballot": "Create, get, list, cancel or finalize secret ballots"
       ballot_changed:
         changes: "Changes"
-        changes_description: "Leave empty to match any change."
+        changes_description: "Leave empty to match any change. “Closing soon” only fires for ballots that run longer than 24 hours."
         changes_placeholder: "Any change"
         changes_created: "Created"
         changes_opened: "Opened"
@@ -155,7 +155,6 @@ en:
           list: "List ballots"
           cancel: "Cancel ballot"
           finalize: "Finalize ballot"
-          non_voters: "List members who haven't voted"
         ballot_id: "Ballot ID"
         title: "Title"
         kind: "Type"

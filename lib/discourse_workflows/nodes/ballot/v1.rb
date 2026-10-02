@@ -4,28 +4,20 @@ if defined?(DiscourseWorkflows)
   module DiscourseWorkflows
     module Nodes
       module Ballot
-        # Creates, reads, cancels and finalizes secret ballots, and lists who
-        # hasn't voted yet. Runs as "Performed by user" and holds them to the
-        # same permissions as the web UI: managing for create/cancel/finalize,
-        # oversight for the rest.
+        # Creates, reads, lists, cancels and finalizes secret ballots. Runs as
+        # "Performed by user" and holds them to the same permissions as the web
+        # UI: managing for create/cancel/finalize, oversight for get/list.
+        # There is deliberately no "who hasn't voted" operation: Workflows keeps
+        # node outputs in its execution history, so the list (in effect, who
+        # voted) would outlive finalizing. Non-voters already get a reminder.
         class V1 < DiscourseWorkflows::NodeType
           include Payload
 
-          OPERATIONS = %w[create get list cancel finalize non_voters].freeze
+          OPERATIONS = %w[create get list cancel finalize].freeze
           MANAGE_OPERATIONS = %w[create cancel finalize].freeze
-          BY_ID_OPERATIONS = %w[get cancel finalize non_voters].freeze
+          BY_ID_OPERATIONS = %w[get cancel finalize].freeze
           STATES = %w[scheduled open ended cancelled].freeze
           MAX_LIST = 100
-
-          NON_VOTER_SCHEMA =
-            DiscourseWorkflows::Schema.merge(
-              DiscourseWorkflows::Schema::BASIC_USER_SCHEMA,
-              DiscourseWorkflows::Schema.entity(
-                "ballot",
-                Payload::BALLOT_PROPERTIES,
-                "The ballot the member hasn't voted in",
-              ),
-            ).freeze
 
           def self.create_property(definition, kind: nil)
             show = { operation: ["create"] }
@@ -46,21 +38,7 @@ if defined?(DiscourseWorkflows)
             capabilities: {
               run_scope: "per_item",
             },
-            output_contracts: [
-              {
-                variants: [
-                  {
-                    schema: NON_VOTER_SCHEMA,
-                    display_options: {
-                      show: {
-                        operation: ["non_voters"],
-                      },
-                    },
-                  },
-                  { schema: Payload::SCHEMA },
-                ],
-              },
-            ],
+            output_contracts: [{ schema: Payload::SCHEMA }],
             properties: {
               operation: {
                 type: :options,
@@ -187,8 +165,6 @@ if defined?(DiscourseWorkflows)
               create(exec_ctx, actor, item_index)
             when "list"
               list(exec_ctx, item_index)
-            when "non_voters"
-              non_voters(find_ballot(exec_ctx, item_index), item_index)
             else
               ballot = find_ballot(exec_ctx, item_index)
               change_state(ballot, actor, operation, item_index) if operation != "get"
@@ -317,25 +293,6 @@ if defined?(DiscourseWorkflows)
               "cancelled" => table[:cancelled_at].not_eq(nil),
             }
             states.map { |state| conditions.fetch(state) }.reduce(:or)
-          end
-
-          # Members of the voting group who haven't voted in an open ballot,
-          # one item each, e.g. for a personal reminder. Who has voted is
-          # already visible to overseers; how they voted never is.
-          def non_voters(ballot, item_index)
-            unless ballot.open?
-              raise_node_error!(
-                I18n.t("ballotage.workflows.not_open", id: ballot.id),
-                item_index: item_index,
-              )
-            end
-
-            voted = ballot.participations.pluck(:user_id)
-            ballot_info = ballot_data(ballot)
-            ::User
-              .where(id: Ballotage::Ballot.eligible_user_ids - voted)
-              .order(:username_lower)
-              .map { |user| { user: serialize_user(user), ballot: ballot_info } }
           end
         end
       end

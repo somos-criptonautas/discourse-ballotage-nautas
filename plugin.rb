@@ -2,7 +2,7 @@
 
 # name: discourse-ballotage-nautas
 # about: Secret black/white-ball ballots (ballotage) for a member group, with participation oversight
-# version: 1.0.0
+# version: 1.1.0
 # authors: DaniW42 — Forked by Criptonautas
 # url: https://github.com/somos-criptonautas/discourse-ballotage-nautas
 # required_version: 2026.7.0

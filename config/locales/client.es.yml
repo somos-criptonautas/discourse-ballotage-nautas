@@ -120,10 +120,10 @@ es:
         "action:ballot": "Votación secreta"
       node_descriptions:
         "trigger:ballot_changed": "Se dispara cuando una votación secreta se crea, abre, está por cerrar, cierra, se cancela o se finaliza"
-        "action:ballot": "Crea, consulta, lista, cancela o finaliza votaciones secretas, o lista quién aún no votó"
+        "action:ballot": "Crea, consulta, lista, cancela o finaliza votaciones secretas"
       ballot_changed:
         changes: "Cambios"
-        changes_description: "Déjalo vacío para cualquier cambio."
+        changes_description: "Déjalo vacío para cualquier cambio. «Por cerrar» solo se dispara en votaciones de más de 24 horas."
         changes_placeholder: "Cualquier cambio"
         changes_created: "Creada"
         changes_opened: "Abierta"
@@ -155,7 +155,6 @@ es:
           list: "Listar votaciones"
           cancel: "Cancelar votación"
           finalize: "Finalizar votación"
-          non_voters: "Listar miembros que no votaron"
         ballot_id: "ID de la votación"
         title: "Título"
         kind: "Tipo"

@@ -217,20 +217,22 @@ hooks:
 When [Discourse Workflows](https://meta.discourse.org/t/discourse-workflows/407100) is
 installed, the builder offers two nodes; they stop working when `ballotage_enabled` is off.
 
-- **Ballot changed** (trigger) fires when a ballot is created, opens, has about 24 h left,
-  closes, is cancelled or is finalized. Filters: change, type, outcome, and the category
+- **Ballot changed** (trigger) fires when a ballot is created, opens, has about 24 h left
+  (only for ballots running longer than 24 h, like the reminder), closes, is cancelled or
+  is finalized. Filters: change, type, outcome, and the category
   and tags of the topic the ballot is embedded in. The item carries `ballot` (id, title,
   type, state, period, rules, outcome, turnout), `candidate`, and `topic` / `post` when
   embedded.
 - **Secret ballot** (action), run as *Performed by user* and held to the same permissions
   as the web UI: *Create* (optionally posting it as a reply in a topic), *Cancel* and
-  *Finalize* need manage permission; *Get*, *List* and *List members who haven't voted*
-  need oversight. Every change is in the staff action log.
+  *Finalize* need manage permission; *Get* and *List* need oversight. Every change is in
+  the staff action log.
 
 Secrecy holds in workflows too: there is **no per-vote trigger** (its timing next to the
 counters would reveal the choice), counts appear only once an ended ballot publishes
-them, and participation is a number — names only through *List members who haven't
-voted*, which overseers can already see. The outcome is always on the item once a ballot
+them, and participation is only ever a number. There is no "who hasn't voted" operation
+either: Workflows keeps every run's output in its execution history (30 days by
+default), so that list — in effect, who voted — would outlive finalizing. The outcome is always on the item once a ballot
 closes, even for ballots that show it to overseers only, since only administrators build
 workflows.
 
