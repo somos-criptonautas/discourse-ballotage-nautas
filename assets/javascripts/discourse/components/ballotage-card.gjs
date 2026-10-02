@@ -6,6 +6,7 @@ import { service } from "@ember/service";
 import { trustHTML } from "@ember/template";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
+import { userPath } from "discourse/lib/url";
 import { escapeExpression } from "discourse/lib/utilities";
 import { and, eq, not, or } from "discourse/truth-helpers";
 import DButton from "discourse/ui-kit/d-button";
@@ -278,7 +279,7 @@ export default class BallotageCard extends Component {
                 {{dIcon "user"}}
                 {{i18n "ballotage.candidate"}}
                 <a
-                  href="/u/{{this.ballot.subject_user.username}}"
+                  href={{userPath this.ballot.subject_user.username}}
                   data-user-card={{this.ballot.subject_user.username}}
                 >@{{this.ballot.subject_user.username}}</a>
               </span>
@@ -410,7 +411,7 @@ export default class BallotageCard extends Component {
                     {{#each this.ballot.voters as |voter|}}
                       <li>
                         <a
-                          href="/u/{{voter.username}}"
+                          href={{userPath voter.username}}
                           data-user-card={{voter.username}}
                         >{{voter.username}}</a>
                         {{#if voter.name}}

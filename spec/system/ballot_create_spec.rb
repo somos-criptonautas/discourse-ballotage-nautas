@@ -19,7 +19,10 @@ RSpec.describe "Creating a ballot" do
     find(".ballotage-create-modal .form-kit__button[type='submit']").click
 
     expect(page).to have_no_css(".ballotage-create-modal")
-    expect(page).to have_css(".ballotage-card__candidate", text: "@#{candidate.username}")
+    expect(page).to have_css(
+      ".ballotage-card__candidate a[href='/u/#{candidate.username}']",
+      text: "@#{candidate.username}",
+    )
     expect(Ballotage::Ballot.last.subject_user).to eq(candidate)
   end
 

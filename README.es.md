@@ -30,7 +30,7 @@ negras/blancas y **propuestas** con A favor / En contra / Abstención. Solo se g
 - **Discourse Workflows:** si está instalado, ofrece el disparador *Votación cambió*
   (creada, abierta, por cerrar, cerrada, cancelada, finalizada; filtros por tipo,
   resultado, categoría y etiquetas) y la acción *Votación secreta* (crear, consultar,
-  listar, cancelar, finalizar, listar quién no votó) con los mismos permisos que la web.
+  listar, cancelar, finalizar) con los mismos permisos que la web.
   Sin disparador por voto y sin recuento antes de que se publique: el secreto se mantiene.
 - **Páginas:** `/ballotage` lista las votaciones programadas y abiertas (arriba a la
   derecha: «Gestionar votaciones» y «Nueva votación» para quien tenga permiso);

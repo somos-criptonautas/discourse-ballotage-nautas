@@ -36,4 +36,3 @@ es:
       not_allowed: "%{username} no puede hacer esto con votaciones secretas."
       ballot_not_found: "No se encontró la votación %{id}."
       embed_failed: "La votación %{id} se creó pero no se pudo publicar: %{errors}"
-      not_open: "La votación %{id} no está abierta."

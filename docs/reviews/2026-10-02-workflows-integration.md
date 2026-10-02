@@ -186,3 +186,19 @@ Confidence: High.
 | 28 Hygiene | Pass | no secrets or local paths; clean tree |
 | 29 Pre-release honesty | Pass | README *Status* section |
 | 30 Obsolete compatibility code | Not applicable | none added |
+
+## 7. Resolution (re-review after fixes)
+
+Each finding was rechecked against the corrected code. The full plugin suite was re-run on
+the same environment: **148 examples, 0 failures** (6 system specs). Rubocop,
+syntax_tree, eslint and prettier are clean.
+
+| Finding | Resolution | Evidence |
+|---|---|---|
+| Medium, Rule 08: non-voter lists outlive finalizing | **Resolved.** The `non_voters` operation was removed; the node and README explain why. Non-voters still get the plugin's own reminder notification. | `lib/discourse_workflows/nodes/ballot/v1.rb` (`OPERATIONS`, class comment); spec "doesn't offer a list of who hasn't voted" in `spec/lib/discourse_workflows/nodes/ballot_spec.rb`; README *Discourse Workflows* |
+| Low, Rule 12: subfolder links | **Resolved.** Candidate and voter links use core `userPath()`, which applies the base path. | `ballotage-card.gjs` (`userPath` import and both `href`s); `spec/system/ballot_create_spec.rb` asserts the rendered `href`. A subfolder install itself was not run. |
+| Low, Rule 25: closing-soon scope | **Resolved.** README and the trigger's *Changes* description (EN/ES/DE) state that it only fires for ballots longer than 24 h. | `README.md`; `changes_description` in `config/locales/client.*.yml` |
+| Low, Rule 18: version | **Resolved.** `plugin.rb` version is `1.1.0`. | `plugin.rb:5` |
+
+The rule matrix changes accordingly: 08, 12, 18 and 25 are now **Pass**. The
+verification gaps in section 4 are unchanged; release readiness remains unverified.

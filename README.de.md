@@ -31,7 +31,7 @@ Gespeichert wird nur, *dass* jemand abgestimmt hat — nie, *wie*.
 - **Discourse Workflows:** falls installiert, gibt es den Auslöser *Kugelung geändert*
   (angelegt, geöffnet, endet bald, beendet, storniert, finalisiert; Filter nach Art,
   Ergebnis, Kategorie und Schlagwörtern) und die Aktion *Geheime Kugelung* (anlegen,
-  abrufen, auflisten, stornieren, finalisieren, Nichtwähler auflisten) mit denselben
+  abrufen, auflisten, stornieren, finalisieren) mit denselben
   Rechten wie die Weboberfläche. Kein Auslöser pro Stimme, keine Stimmenzahlen vor der
   Veröffentlichung: die Geheimhaltung bleibt gewahrt.
 - **Seiten:** `/ballotage` listet geplante und laufende Kugelungen (oben rechts:

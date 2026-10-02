@@ -5,7 +5,6 @@ RSpec.describe DiscourseWorkflows::Nodes::Ballot::V1, discourse_workflows: true 
   fab!(:voting_group, :group)
   fab!(:oversight_group, :group)
   fab!(:voter) { Fabricate(:user, username: "voter", group_ids: [voting_group.id]) }
-  fab!(:other_voter) { Fabricate(:user, username: "another", group_ids: [voting_group.id]) }
   fab!(:overseer) { Fabricate(:user, group_ids: [oversight_group.id]) }
   fab!(:candidate, :user)
   fab!(:topic)
@@ -181,27 +180,10 @@ RSpec.describe DiscourseWorkflows::Nodes::Ballot::V1, discourse_workflows: true 
     end
   end
 
-  describe "non_voters" do
-    it "lists members of the voting group who haven't voted yet" do
-      ballot = create_ballot
-      ballot.cast_vote!(voter, "white")
-
-      data = run(operation: "non_voters", ballot_id: ballot.id)
-
-      expect(data.map { |d| d.dig("user", "username") }).to eq([other_voter.username])
-      expect(data.first.dig("ballot", "id")).to eq(ballot.id)
-      expect(data.first).to match_node_output_schema(
-        described_class,
-        configuration: {
-          "operation" => "non_voters",
-        },
-      )
-    end
-
-    it "refuses a ballot that isn't open" do
-      ballot = create_ballot(starts_at: 1.day.from_now, ends_at: 2.days.from_now)
-
-      expect { run(operation: "non_voters", ballot_id: ballot.id) }.to raise_error(
+  describe "operations" do
+    it "doesn't offer a list of who hasn't voted, which would outlive finalizing" do
+      expect(described_class::OPERATIONS).not_to include("non_voters")
+      expect { run(operation: "non_voters", ballot_id: create_ballot.id) }.to raise_error(
         DiscourseWorkflows::NodeError,
       )
     end

@@ -36,4 +36,3 @@ de:
       not_allowed: "%{username} darf das bei geheimen Kugelungen nicht."
       ballot_not_found: "Kugelung %{id} nicht gefunden."
       embed_failed: "Kugelung %{id} wurde angelegt, konnte aber nicht gepostet werden: %{errors}"
-      not_open: "Kugelung %{id} ist nicht offen."
