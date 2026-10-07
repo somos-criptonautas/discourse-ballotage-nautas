@@ -21,7 +21,7 @@ module Ballotage
     # /ballotage page. Empty for members who can neither vote nor oversee.
     def current
       visible = guardian.can_vote_in_ballotage? || guardian.can_oversee_ballotage?
-      ballots = visible ? Ballot.active.includes(post: :topic).to_a : []
+      ballots = visible ? Ballot.active.includes(:subject_user, post: :topic).to_a : []
 
       render json: {
                can_vote: guardian.can_vote_in_ballotage?,
@@ -69,7 +69,7 @@ module Ballotage
       # ballots starting at the same time keep a stable order.
       ballots =
         Ballot
-          .includes(post: :topic, participations: :user)
+          .includes(:subject_user, post: :topic, participations: :user)
           .order(starts_at: :desc, id: :desc)
           .partition { |b| b.cancellable? }
           .flatten
@@ -79,71 +79,23 @@ module Ballotage
              }
     end
 
-    # POST /ballotage/ballots — params: title, start_date, end_date,
-    # optional start_time / end_time (HH:MM, default 00:01 / 23:59), kind
-    # (admission|proposal), rejection_threshold or rejection_percent,
-    # approval_rule, quorum_percent,
-    # result_visibility, keep_counts. The rules can't be changed afterwards:
-    # there is no update endpoint, so nobody can tune them after seeing counts.
+    # POST /ballotage/ballots — see Ballotage::BallotCreator for the params.
     def create
-      # A configured zone wins; otherwise the creator's profile zone, which
-      # Discourse detects from their browser.
-      zone =
-        ActiveSupport::TimeZone[
-          SiteSetting.ballotage_timezone.presence || current_user.user_option&.timezone.to_s
-        ] || Time.zone
-      starts_at = parse_in_zone(zone, params[:start_date], params[:start_time].presence || "00:01")
-      ends_at = parse_in_zone(zone, params[:end_date], params[:end_time].presence || "23:59")
-
-      if ends_at <= Time.zone.now
-        return render_json_error(I18n.t("ballotage.errors.ends_in_past"), status: 422)
-      end
-
-      rules =
-        params.slice(
-          :kind,
-          :rejection_threshold,
-          :rejection_percent,
-          :approval_rule,
-          :quorum_percent,
-          :result_visibility,
-          :keep_counts,
-        ).permit!
-      kind = rules[:kind].presence || "admission"
-      proposal = kind == "proposal"
-
-      ballot =
-        Ballot.create!(
-          title: params.expect(:title),
-          starts_at: starts_at,
-          ends_at: ends_at,
-          created_by_id: current_user.id,
-          kind: kind,
-          rejection_threshold: int_param(rules[:rejection_threshold]) || 1,
-          rejection_percent: int_param(rules[:rejection_percent]),
-          approval_rule: rules[:approval_rule].presence || "majority",
-          quorum_percent: int_param(rules[:quorum_percent]),
-          # Admissions announce only the outcome; proposals their counts too.
-          result_visibility:
-            rules[:result_visibility].presence || (proposal ? "counts" : "outcome"),
-          keep_counts: rules.key?(:keep_counts) ? rules[:keep_counts].to_s == "true" : proposal,
-        )
-      log_action("ballotage_create", ballot)
-
+      ballot = BallotCreator.create!(current_user, params.permit!.to_h)
       render json: { ballot: ballot_json(ballot) }, status: :created
+    rescue Ballot::InvalidState => e
+      render_json_error(e.message, status: 422)
     end
 
     # POST /ballotage/ballots/:id/cancel — scheduled or running ballots.
-    # Votes already cast are kept until the ballot is finalized.
     def cancel
       ballot = Ballot.find(params[:id])
-      ballot.with_lock do
-        unless ballot.cancellable?
-          return render_json_error(I18n.t("ballotage.errors.not_cancellable"), status: 422)
-        end
-        ballot.update!(cancelled_at: Time.zone.now)
+      begin
+        ballot.cancel!
+      rescue Ballot::InvalidState => e
+        return render_json_error(e.message, status: 422)
       end
-      log_action("ballotage_cancel", ballot)
+      ballot.log_staff_action(current_user, "ballotage_cancel")
       render json: { ballot: ballot_json(ballot) }
     end
 
@@ -151,11 +103,12 @@ module Ballotage
     # participant list of an ended or cancelled ballot.
     def finalize
       ballot = Ballot.find(params[:id])
-      unless ballot.finalizable?
-        return render_json_error(I18n.t("ballotage.errors.not_finalizable"), status: 422)
+      begin
+        ballot.finalize!
+      rescue Ballot::InvalidState => e
+        return render_json_error(e.message, status: 422)
       end
-      ballot.finalize!
-      log_action("ballotage_finalize", ballot)
+      ballot.log_staff_action(current_user, "ballotage_finalize")
       render json: { ballot: ballot_json(ballot) }
     end
 
@@ -168,7 +121,7 @@ module Ballotage
         return render_json_error(I18n.t("ballotage.errors.not_deletable"), status: 422)
       end
       ballot.destroy!
-      log_action("ballotage_delete", ballot)
+      ballot.log_staff_action(current_user, "ballotage_delete")
       render json: success_json
     end
 
@@ -202,6 +155,10 @@ module Ballotage
         can_vote: can_vote,
         has_voted: can_vote && ballot.voted?(current_user),
         post_url: (ballot.post.url if ballot.post && guardian.can_see?(ballot.post)),
+        subject_user:
+          (
+            BasicUserSerializer.new(ballot.subject_user, root: false).as_json if ballot.subject_user
+          ),
       }
       if ballot.outcome_visible_to?(guardian)
         json.merge!(
@@ -227,9 +184,10 @@ module Ballotage
       )
       return json if ballot.finalized?
 
-      # Participation is visible while the ballot runs; counts only once it is
-      # over. Showing both live would let someone match a new name on the list
-      # to the counter that just moved.
+      # Participation is visible while the ballot runs; counts only once it has
+      # ended. Showing both live would let someone match a new name on the list
+      # to the counter that just moved. Cancelled ballots never show counts
+      # (cancel zeroes them anyway).
       # Rows of deleted users are kept (see README), so count rows rather than
       # surviving users: voter_count always equals the sum of the counts.
       voters = ballot.participations.map(&:user).compact.sort_by { |u| u.username_lower }
@@ -239,13 +197,12 @@ module Ballotage
       json
     end
 
-    # Counts after the end: overseers until finalizing; everyone once an ended
-    # ballot publishes them, and after finalizing only if it keeps them.
+    # Counts after the end: overseers until finalizing; everyone else only
+    # when the ballot publishes them. Never for a cancelled ballot — a manager
+    # could cancel right after one vote.
     def counts_visible?(ballot, oversees)
-      return false unless ballot.over?
-      published = ballot.result_visibility == "counts" && ballot.state == "ended"
-      return published && ballot.keep_counts if ballot.finalized?
-      oversees || published
+      return true if ballot.counts_published?
+      oversees && ballot.state == "ended" && !ballot.finalized?
     end
 
     def published_to_reader?(ballot)
@@ -256,31 +213,6 @@ module Ballotage
     def eligible_count
       return @eligible_count if defined?(@eligible_count)
       @eligible_count = Ballot.eligible_count
-    end
-
-    def int_param(value)
-      return nil if value.blank?
-      Integer(value.to_s, exception: false) || raise(Discourse::InvalidParameters.new(:rules))
-    end
-
-    # Shows up in Admin → Logs → Staff actions, so managing ballots is itself
-    # on the record.
-    def log_action(type, ballot)
-      StaffActionLogger.new(current_user).log_custom(
-        type,
-        ballot_id: ballot.id,
-        title: ballot.title,
-        kind: ballot.kind,
-      )
-    end
-
-    def parse_in_zone(zone, date, time)
-      y, m, d = date.to_s.match(/\A(\d{4})-(\d{2})-(\d{2})\z/)&.captures&.map(&:to_i)
-      hh, mm = time.to_s.match(/\A(\d{2}):(\d{2})\z/)&.captures&.map(&:to_i)
-      unless y && hh && Date.valid_date?(y, m, d) && hh < 24 && mm < 60
-        raise Discourse::InvalidParameters.new(:date)
-      end
-      zone.local(y, m, d, hh, mm)
     end
 
     def ensure_can_oversee

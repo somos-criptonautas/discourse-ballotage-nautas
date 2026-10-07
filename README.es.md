@@ -25,6 +25,13 @@ negras/blancas y **propuestas** con A favor / En contra / Abstención. Solo se g
   también el recuento — nunca quién votó.
 - **Notificaciones** al abrir, 24 h antes del cierre (a quien aún no votó) y al cerrar.
   Crear, cancelar, finalizar y borrar queda registrado en el registro de acciones del staff.
+- **Candidato:** una admisión puede indicar el miembro sobre el que se vota (selector
+  opcional al crearla; se muestra en la tarjeta).
+- **Discourse Workflows:** si está instalado, ofrece el disparador *Votación cambió*
+  (creada, abierta, por cerrar, cerrada, cancelada, finalizada; filtros por tipo,
+  resultado, categoría y etiquetas) y la acción *Votación secreta* (crear, consultar,
+  listar, cancelar, finalizar) con los mismos permisos que la web.
+  Sin disparador por voto y sin recuento antes de que se publique: el secreto se mantiene.
 - **Páginas:** `/ballotage` lista las votaciones programadas y abiertas (arriba a la
   derecha: «Gestionar votaciones» y «Nueva votación» para quien tenga permiso);
   `/ballotage/manage` es la gestión para los custodios y los administradores. El enlace en
@@ -35,6 +42,7 @@ negras/blancas y **propuestas** con A favor / En contra / Abstención. Solo se g
 La base de datos no vincula a ningún miembro con su voto: la tabla de participación solo
 registra quién votó (sin marcas de tiempo) y los votos son simples contadores. Mientras la
 votación está abierta, los custodios ven la participación pero no el recuento.
+Al cancelar, el recuento se descarta en el momento, así que nunca se muestra.
 **Finalizar** borra para siempre la lista de quién votó y — salvo que se decida
 conservarlo — el recuento; quedan el título, el periodo, el estado y el resultado. Quien
 tenga acceso directo a la base de datos podría observar los contadores en vivo; eso debe

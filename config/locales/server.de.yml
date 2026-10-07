@@ -29,3 +29,10 @@ de:
       not_cancellable: "Nur geplante oder laufende Kugelungen können storniert werden."
       not_deletable: "Nur finalisierte Kugelungen können gelöscht werden."
       not_finalizable: "Nur beendete oder stornierte Kugelungen können finalisiert werden."
+      subject_only_for_admission: "kann nur bei Aufnahme-Kugelungen gesetzt werden"
+    workflows:
+      unknown_operation: "Unbekannte Kugelungs-Aktion: %{operation}"
+      invalid_parameter: "Ungültiger Kugelungs-Parameter: %{name}"
+      not_allowed: "%{username} darf das bei geheimen Kugelungen nicht."
+      ballot_not_found: "Kugelung %{id} nicht gefunden."
+      embed_failed: "Kugelung %{id} wurde angelegt, konnte aber nicht gepostet werden: %{errors}"

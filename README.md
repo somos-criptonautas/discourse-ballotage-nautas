@@ -42,6 +42,11 @@ Forked from upstream `v1.0.0-2-g753691d`. Kept up to date with every change in t
   the outcome if published). Runs in a scheduled job every 5 minutes.
 - **Audit log:** creating, cancelling, finalizing and deleting ballots is recorded in
   *Admin → Logs → Staff actions* (`ballotage_*`).
+- **Candidate:** an admission can name the member it is about (optional user picker in
+  the create form; shown on the card). Lets automations act on the outcome.
+- **Discourse Workflows:** a *Ballot changed* trigger and a *Secret ballot* action (see
+  [Discourse Workflows](#discourse-workflows)). The plugin also fires
+  `ballotage_ballot_{created,opened,closing_soon,closed,cancelled,finalized}` events.
 - **Spanish** translation, and READMEs in [Spanish](README.es.md) and [German](README.de.md).
 - **Time zone** setting is a dropdown of real zones, and empty by default ("automatic"):
   new ballots use their creator's profile time zone and everyone sees times in their own
@@ -110,8 +115,9 @@ The database is deliberately structured so that nothing in it links a member to 
 - **Counts are hidden until the ballot is over.** While a ballot is running, the
   card and management page show the participant list (who has voted) but not the black/white
   counts. Showing both at the same time would let an observer match a new name appearing
-  on the list to whichever counter just moved. Once the ballot is over no further votes
-  can arrive, so the final counts are shown.
+  on the list to whichever counter just moved. Once the ballot has ended no further votes
+  can arrive, so the final counts are shown. Cancelling discards the counts instead —
+  otherwise a manager could cancel right after a single vote and read it.
 - **Deleted users.** If a member who voted is deleted, their participation row is kept so
   "votes cast" keeps matching the black/white tally; they just drop off the voter list.
   Finalizing removes those rows like all others.
@@ -198,13 +204,40 @@ hooks:
   without a post; paste `[ballotage id=N]` into a post later if wanted.
 - A ballot created from the composer exists even if the post is discarded — cancel it from
   `/ballotage/manage`.
-- A scheduled or open ballot can be cancelled; votes already cast are kept until the
-  ballot is finalized.
+- A scheduled or open ballot can be cancelled. Cancelling discards the tally right away,
+  so it is never shown; the list of who voted stays until the ballot is finalized.
 - Once a ballot has ended (or been cancelled), it can be finalized. This is irreversible
   and permanently deletes the participant list and (unless kept) the counts — a
   confirmation warns about this before proceeding. The outcome remains.
 - A finalized ballot can then be deleted to remove it from the list entirely. Only
   finalized ballots can be deleted, so a result can never be lost in a single step.
+
+## Discourse Workflows
+
+When [Discourse Workflows](https://meta.discourse.org/t/discourse-workflows/407100) is
+installed, the builder offers two nodes; they stop working when `ballotage_enabled` is off.
+
+- **Ballot changed** (trigger) fires when a ballot is created, opens, has about 24 h left
+  (only for ballots running longer than 24 h, like the reminder), closes, is cancelled or
+  is finalized. Filters: change, type, outcome, and the category
+  and tags of the topic the ballot is embedded in. The item carries `ballot` (id, title,
+  type, state, period, rules, outcome, turnout), `candidate`, and `topic` / `post` when
+  embedded.
+- **Secret ballot** (action), run as *Performed by user* and held to the same permissions
+  as the web UI: *Create* (optionally posting it as a reply in a topic), *Cancel* and
+  *Finalize* need manage permission; *Get* and *List* need oversight. Every change is in
+  the staff action log.
+
+Secrecy holds in workflows too: there is **no per-vote trigger** (its timing next to the
+counters would reveal the choice), counts appear only once an ended ballot publishes
+them, and participation is only ever a number. There is no "who hasn't voted" operation
+either: Workflows keeps every run's output in its execution history (30 days by
+default), so that list — in effect, who voted — would outlive finalizing. The outcome is always on the item once a ballot
+closes, even for ballots that show it to overseers only, since only administrators build
+workflows.
+
+Example: *Ballot changed* (closed, admission, approved) → core *Group* action (add
+`={{ $json.candidate.username }}`) → *Send personal message* to the candidate.
 
 ## Development & tests
 

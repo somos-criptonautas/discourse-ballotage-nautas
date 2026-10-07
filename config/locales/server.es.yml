@@ -29,3 +29,10 @@ es:
       not_cancellable: "Solo puedes cancelar votaciones programadas o abiertas."
       not_deletable: "Solo puedes borrar votaciones finalizadas."
       not_finalizable: "Solo puedes finalizar votaciones cerradas o canceladas."
+      subject_only_for_admission: "solo se puede usar en votaciones de admisión"
+    workflows:
+      unknown_operation: "No reconocemos esta operación de votación: %{operation}"
+      invalid_parameter: "Este dato de la votación no es válido: %{name}"
+      not_allowed: "%{username} no tiene permiso para hacer esto con votaciones secretas."
+      ballot_not_found: "No encontramos la votación %{id}."
+      embed_failed: "La votación %{id} se creó, pero no pudimos publicarla: %{errors}"

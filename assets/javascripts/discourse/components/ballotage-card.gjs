@@ -6,6 +6,8 @@ import { service } from "@ember/service";
 import { trustHTML } from "@ember/template";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
+import { userPath } from "discourse/lib/url";
+import { escapeExpression } from "discourse/lib/utilities";
 import { and, eq, not, or } from "discourse/truth-helpers";
 import DButton from "discourse/ui-kit/d-button";
 import dIcon from "discourse/ui-kit/helpers/d-icon";
@@ -190,7 +192,7 @@ export default class BallotageCard extends Component {
   cancel() {
     this.dialog.yesNoConfirm({
       message: i18n("ballotage.manage.confirm_cancel", {
-        title: this.ballot.title,
+        title: escapeExpression(this.ballot.title),
       }),
       didConfirm: () =>
         this.request(`/ballotage/ballots/${this.ballot.id}/cancel.json`),
@@ -202,7 +204,7 @@ export default class BallotageCard extends Component {
     this.dialog.deleteConfirm({
       title: i18n("ballotage.manage.finalize_title"),
       message: i18n("ballotage.manage.confirm_finalize", {
-        title: this.ballot.title,
+        title: escapeExpression(this.ballot.title),
       }),
       confirmButtonLabel: "ballotage.manage.finalize",
       didConfirm: () =>
@@ -215,7 +217,7 @@ export default class BallotageCard extends Component {
     this.dialog.deleteConfirm({
       title: i18n("ballotage.manage.delete_title"),
       message: i18n("ballotage.manage.confirm_delete", {
-        title: this.ballot.title,
+        title: escapeExpression(this.ballot.title),
       }),
       didConfirm: async () => {
         if (
@@ -272,6 +274,16 @@ export default class BallotageCard extends Component {
               <span>{{dIcon "clock"}} {{this.timeHint}}</span>
             {{/if}}
             <span>{{dIcon "scale-balanced"}} {{this.ruleSummary}}</span>
+            {{#if this.ballot.subject_user}}
+              <span class="ballotage-card__candidate">
+                {{dIcon "user"}}
+                {{i18n "ballotage.candidate"}}
+                <a
+                  href={{userPath this.ballot.subject_user.username}}
+                  data-user-card={{this.ballot.subject_user.username}}
+                >@{{this.ballot.subject_user.username}}</a>
+              </span>
+            {{/if}}
           </p>
         </header>
 
@@ -386,6 +398,10 @@ export default class BallotageCard extends Component {
                 <p class="ballotage-card__hint">{{i18n
                     "ballotage.manage.result_after_end"
                   }}</p>
+              {{else if (eq this.ballot.state "cancelled")}}
+                <p class="ballotage-card__hint">{{i18n
+                    "ballotage.manage.result_discarded"
+                  }}</p>
               {{/if}}
 
               {{#if this.ballot.voters.length}}
@@ -395,7 +411,7 @@ export default class BallotageCard extends Component {
                     {{#each this.ballot.voters as |voter|}}
                       <li>
                         <a
-                          href="/u/{{voter.username}}"
+                          href={{userPath voter.username}}
                           data-user-card={{voter.username}}
                         >{{voter.username}}</a>
                         {{#if voter.name}}

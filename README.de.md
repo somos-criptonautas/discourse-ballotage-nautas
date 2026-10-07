@@ -26,6 +26,14 @@ Gespeichert wird nur, *dass* jemand abgestimmt hat — nie, *wie*.
 - **Benachrichtigungen** beim Start, 24 h vor Ende (an alle, die noch nicht abgestimmt
   haben) und beim Ende. Anlegen, Stornieren, Finalisieren und Löschen erscheinen im
   Staff-Aktionsprotokoll.
+- **Kandidat:in:** eine Aufnahme kann das betroffene Mitglied angeben (optionale
+  Auswahl beim Anlegen; auf der Karte angezeigt).
+- **Discourse Workflows:** falls installiert, gibt es den Auslöser *Kugelung geändert*
+  (angelegt, geöffnet, endet bald, beendet, storniert, finalisiert; Filter nach Art,
+  Ergebnis, Kategorie und Schlagwörtern) und die Aktion *Geheime Kugelung* (anlegen,
+  abrufen, auflisten, stornieren, finalisieren) mit denselben
+  Rechten wie die Weboberfläche. Kein Auslöser pro Stimme, keine Stimmenzahlen vor der
+  Veröffentlichung: die Geheimhaltung bleibt gewahrt.
 - **Seiten:** `/ballotage` listet geplante und laufende Kugelungen (oben rechts:
   „Kugelungen verwalten“ und „Neue Kugelung“ für Berechtigte); `/ballotage/manage` ist die
   Verwaltung für Aufsicht und Admins. Einen Link in der Seitenleiste legst du selbst über
@@ -35,7 +43,8 @@ Gespeichert wird nur, *dass* jemand abgestimmt hat — nie, *wie*.
 
 Keine Datenbank-Verknüpfung zwischen Mitglied und Stimme: die Teilnahme-Tabelle kennt nur,
 wer abgestimmt hat (ohne Zeitstempel), die Stimmen sind nur Zähler. Während der Laufzeit
-sieht die Aufsicht die Teilnahme, aber keinen Zwischenstand. **Finalisieren** löscht
+sieht die Aufsicht die Teilnahme, aber keinen Zwischenstand; eine Stornierung verwirft die
+Stimmenzahlen sofort, sie werden nie angezeigt. **Finalisieren** löscht
 unwiderruflich die Teilnehmerliste und — sofern nicht bewusst behalten — die
 Stimmenzahlen; Titel, Zeitraum, Status und Ergebnis bleiben. Wer direkten
 Datenbankzugriff hat, könnte die Zähler live beobachten; das muss organisatorisch
