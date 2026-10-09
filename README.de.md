@@ -2,6 +2,8 @@
 
 [ENGLISH](README.md) | [ESPAÑOL](README.es.md) | **DEUTSCH**
 
+Gepflegt von Criptonautas. Nicht mit Discourse (Civilized Discourse Construction Kit, Inc.) verbunden und nicht von Discourse unterstützt.
+
 > Fork von [DaniW42/discourse-ballotage](https://github.com/DaniW42/discourse-ballotage),
 > gepflegt von [Criptonautas](https://github.com/somos-criptonautas). Die vollständige
 > Dokumentation (inkl. Unterschiede zum Original) steht auf [Englisch](README.md).
