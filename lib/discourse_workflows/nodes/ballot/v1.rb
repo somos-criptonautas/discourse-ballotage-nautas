@@ -78,9 +78,12 @@ if defined?(DiscourseWorkflows)
               end_date: create_property({ type: :string, required: true }),
               end_time: create_property({ type: :string, required: false }),
               rejection_threshold:
-                create_property({ type: :integer, required: false }, kind: "admission"),
+                create_property({ type: :integer, required: false, min: 1 }, kind: "admission"),
               rejection_percent:
-                create_property({ type: :integer, required: false }, kind: "admission"),
+                create_property(
+                  { type: :integer, required: false, min: 1, max: 100 },
+                  kind: "admission",
+                ),
               approval_rule:
                 create_property(
                   {
@@ -91,7 +94,8 @@ if defined?(DiscourseWorkflows)
                   },
                   kind: "proposal",
                 ),
-              quorum_percent: create_property({ type: :integer, required: false }),
+              quorum_percent:
+                create_property({ type: :integer, required: false, min: 1, max: 100 }),
               result_visibility:
                 create_property(
                   { type: :options, required: false, options: Ballotage::Ballot::VISIBILITIES },
@@ -117,6 +121,8 @@ if defined?(DiscourseWorkflows)
                 type: :integer,
                 required: false,
                 default: 20,
+                min: 1,
+                max: MAX_LIST,
                 display_options: {
                   show: {
                     operation: ["list"],

@@ -21,6 +21,9 @@ if defined?(DiscourseWorkflows)
                 "change" => {
                   "type" => "string",
                   "enum" => CHANGES,
+                  "description" =>
+                    "Ballot lifecycle step. closing_soon fires about 24 h before the end, only " \
+                      "for ballots running longer than 24 h. There is no per-vote change.",
                 },
               ),
             ).freeze

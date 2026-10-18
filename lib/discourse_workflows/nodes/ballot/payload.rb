@@ -12,10 +12,18 @@ if defined?(DiscourseWorkflows)
             {
               "id": { "type": "integer" },
               "title": { "type": "string" },
-              "kind": { "type": "string", "enum": ["admission", "proposal"] },
-              "state": { "type": "string", "enum": ["scheduled", "open", "ended", "cancelled"] },
+              "kind": {
+                "type": "string",
+                "enum": ["admission", "proposal"],
+                "description": "admission: black/white-ball vote on admitting the candidate; proposal: approve/reject/abstain"
+              },
+              "state": {
+                "type": "string",
+                "enum": ["scheduled", "open", "ended", "cancelled"],
+                "description": "From the clock: scheduled before starts_at, open until ends_at, then ended"
+              },
               "finalized": { "type": "boolean" },
-              "url": { "type": "string" },
+              "url": { "type": "string", "description": "The post embedding the ballot, else the /ballotage page" },
               "starts_at": { "type": "string", "format": "date-time" },
               "ends_at": { "type": "string", "format": "date-time" },
               "rejection_threshold": { "type": "integer" },
@@ -26,22 +34,22 @@ if defined?(DiscourseWorkflows)
               "outcome": {
                 "type": ["string", "null"],
                 "enum": ["approved", "rejected", "no_quorum", null],
-                "description": "Set once the ballot has closed"
+                "description": "Set once the ballot has closed; only approved means accepted"
               },
               "voter_count": {
                 "type": ["integer", "null"],
-                "description": "Members who have voted; null once finalized"
+                "description": "How many members have voted, never who or how; null once finalized"
               },
               "eligible_count": { "type": ["integer", "null"] },
               "closed_voter_count": { "type": ["integer", "null"] },
               "closed_eligible_count": { "type": ["integer", "null"] },
               "black_count": {
                 "type": "integer",
-                "description": "Only when the ended ballot publishes its counts"
+                "description": "Reject votes; only when the ended ballot publishes its counts"
               },
               "white_count": {
                 "type": "integer",
-                "description": "Only when the ended ballot publishes its counts"
+                "description": "Approve votes; only when the ended ballot publishes its counts"
               },
               "abstain_count": {
                 "type": "integer",
@@ -55,12 +63,23 @@ if defined?(DiscourseWorkflows)
               DiscourseWorkflows::Schema.entity(
                 "ballot",
                 BALLOT_PROPERTIES,
-                "Secret ballot (discourse-ballotage-nautas)",
+                # Discourse AI's workflow author only reads descriptions on objects, so the
+                # hints it needs about the scalar fields live here.
+                "Secret ballot from the ballotage plugin (member admissions and proposals " \
+                  "with anonymous counts). Not a Discourse poll: unrelated to [poll] in posts " \
+                  "and to poll votes. kind admission = black/white-ball vote on admitting " \
+                  "candidate; proposal = approve/reject/abstain. outcome (approved, rejected, " \
+                  "no_quorum) is set once closed. voter_count says how many voted, never who " \
+                  "or how. Counts (black = reject, white = approve, abstain) appear only once " \
+                  "an ended ballot publishes them. The trigger's closing_soon fires about 24 h before the end, " \
+                  "only for ballots longer than 24 h; there is no per-vote event. topic and post " \
+                  "are present only when the ballot is embedded in a post.",
               ),
               DiscourseWorkflows::Schema.entity(
                 "candidate",
                 DiscourseWorkflows::Schema::BASIC_USER_PROPERTIES,
-                "The member an admission ballot is about, when set",
+                "The member an admission ballot is about; present only when one was picked. " \
+                  "Use candidate.username for group or message actions.",
               ),
               DiscourseWorkflows::Schema::TOPIC_LIST_ITEM_SCHEMA,
               DiscourseWorkflows::Schema::POST_SCHEMA,
