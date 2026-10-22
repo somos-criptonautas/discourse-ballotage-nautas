@@ -15,6 +15,8 @@ en:
       load_error: "The data could not be loaded. Please reload the page."
       period: "%{start} to %{end}"
       candidate: "Candidate:"
+      sidebar:
+        section_title: "Ballots"
       kind_tag:
         admission: "ADMISSION"
         proposal: "PROPOSAL"

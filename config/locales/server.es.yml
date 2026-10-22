@@ -5,7 +5,7 @@ es:
     ballotage_oversight_group: "Custodios: ven quién votó (en las publicaciones y en /ballotage/manage) y, al cerrar, el resultado. Nunca ven qué votó cada quien. Los administradores siempre tienen acceso."
     ballotage_oversight_can_manage: "Los custodios también pueden crear, cancelar, finalizar y borrar votaciones (si no, solo los administradores)."
     ballotage_info_text: "Aviso opcional que aparece en /ballotage, por ejemplo quién puede votar. Déjalo vacío si no quieres mostrar nada."
-    ballotage_sidebar_section: "Enlace en la barra lateral a /ballotage, con el número de votaciones abiertas en las que el miembro aún no votó, para quien puede votar o supervisar. Vacío: sin enlace. «community»: en la sección Comunidad. Cualquier otro texto: una sección propia con ese título."
+    ballotage_sidebar_section: "Enlace en la barra lateral a /ballotage, con el número de votaciones abiertas en las que el miembro aún no votó, para quien puede votar o supervisar. Vacío: sin enlace. «community»: en la sección Comunidad. «section»: una sección propia titulada «Votaciones» en el idioma de cada persona (el texto se cambia por idioma en Personalizar → Texto, clave js.ballotage.sidebar.section_title). Cualquier otro texto: una sección propia con ese título."
     ballotage_timezone: "Zona horaria de las votaciones. En automático, cada votación usa la zona de quien la crea y cada persona ve las horas en la suya."
   ballotage:
     kind_tag:

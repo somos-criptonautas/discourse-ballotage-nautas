@@ -155,7 +155,7 @@ handled organizationally (e.g. restrict database/console access during ballots).
 | `ballotage_oversight_group` | *(none)* | Group that can see, at `/ballotage/manage`, who has voted and — after the end — the result. |
 | `ballotage_oversight_can_manage` | `false` | Whether the oversight group may also create, cancel and finalize ballots (otherwise only admins can). |
 | `ballotage_info_text` | *(empty)* | Optional plain-text notice shown below the content on `/ballotage`, e.g. who is eligible. Nothing is shown when empty. |
-| `ballotage_sidebar_section` | *(empty)* | Sidebar link to `/ballotage` with a count of open ballots the member hasn't voted in, shown to members who can vote or oversee. Empty: no link. `community`: in the Community section. Any other text: its own sidebar section with that title (a new section; it can't join one an admin created — add a plain `/ballotage` link there instead). |
+| `ballotage_sidebar_section` | *(empty)* | Sidebar link to `/ballotage` with a count of open ballots the member hasn't voted in, shown to members who can vote or oversee. Empty: no link. `community`: in the Community section. `section`: its own section titled "Ballots" in each member's language (reword it per language in *Admin → Customize → Text*, key `js.ballotage.sidebar.section_title`). Any other text: its own sidebar section with that title (a new section; it can't join one an admin created — add a plain `/ballotage` link there instead). |
 | `ballotage_timezone` | *(automatic)* | Time zone for ballot start/end times. Automatic: the creator's profile zone; everyone sees times in their own zone. Pick a zone to force one for everyone. |
 
 ## Permissions

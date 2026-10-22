@@ -52,6 +52,20 @@ RSpec.describe "Ballots in the sidebar" do
     expect(page).to have_no_css("#{link} .sidebar-section-link-content-badge")
   end
 
+  it "titles the section in the member's language and keeps it out of capitals" do
+    SiteSetting.ballotage_sidebar_section = "section"
+    SiteSetting.allow_user_locale = true
+    voter.update!(locale: "es")
+    sign_in(voter)
+    visit("/latest")
+
+    header = ".sidebar-section[data-section-name='ballotage'] .sidebar-section-header"
+    expect(page).to have_css(header, text: "Votaciones")
+    expect(
+      page.evaluate_script("getComputedStyle(document.querySelector(\"#{header}\")).textTransform"),
+    ).to eq("none")
+  end
+
   it "hides the link from members who can neither vote nor oversee" do
     SiteSetting.ballotage_sidebar_section = "community"
     sign_in(plain_user)

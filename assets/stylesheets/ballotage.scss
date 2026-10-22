@@ -314,3 +314,10 @@
   color: var(--primary-medium);
   font-weight: normal;
 }
+
+// Core uppercases sidebar headers; ours keeps the title as written.
+.sidebar-section-wrapper[data-section-name="ballotage"]
+  .sidebar-section-header-wrapper
+  .sidebar-section-header {
+  text-transform: none;
+}

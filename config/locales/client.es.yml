@@ -15,6 +15,8 @@ es:
       load_error: "No pudimos cargar los datos. Recarga la página."
       period: "Del %{start} al %{end}"
       candidate: "Candidatura:"
+      sidebar:
+        section_title: "Votaciones"
       kind_tag:
         admission: "ADMISIÓN"
         proposal: "PROPUESTA"

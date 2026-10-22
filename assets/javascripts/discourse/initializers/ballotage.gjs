@@ -40,19 +40,24 @@ function linkClass(base, currentUser) {
   };
 }
 
-// "community" puts the link in the Community section; any other text becomes
-// the title of a section of its own.
+// "community" puts the link in the Community section; "section" makes a section
+// of its own titled in each reader's language (editable in Customize → Text);
+// any other text becomes that section's title as typed.
 function addSidebarLink(api, currentUser, section) {
   if (section.toLowerCase() === "community") {
     api.addCommunitySectionLink((base) => linkClass(base, currentUser));
     return;
   }
+  const heading =
+    section.toLowerCase() === "section"
+      ? i18n("ballotage.sidebar.section_title")
+      : section;
   api.addSidebarSection(
     (BaseSection, BaseLink) =>
       class extends BaseSection {
         name = "ballotage";
-        text = section;
-        title = section;
+        text = heading;
+        title = heading;
         links = [new (linkClass(BaseLink, currentUser))()];
       }
   );
