@@ -22,6 +22,7 @@ import {
 // What it shows follows from the JSON: voters get has_voted, overseers also
 // get participation (and black/white once over), managers get the actions.
 export default class BallotageCard extends Component {
+  @service currentUser;
   @service dialog;
   @service siteSettings;
 
@@ -180,10 +181,18 @@ export default class BallotageCard extends Component {
         choice: this.choiceLabel(choice),
       }),
       didConfirm: async () => {
-        await this.request("/ballotage/vote.json", "POST", {
+        const voted = await this.request("/ballotage/vote.json", "POST", {
           ballot_id: this.ballot.id,
           choice,
         });
+        const perms = this.currentUser?.ballotage;
+        if (voted && perms?.pending) {
+          // set() so the sidebar badge re-renders.
+          this.currentUser.set("ballotage", {
+            ...perms,
+            pending: perms.pending - 1,
+          });
+        }
       },
     });
   }

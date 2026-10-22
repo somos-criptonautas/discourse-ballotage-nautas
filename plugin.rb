@@ -63,6 +63,7 @@ after_initialize do
       can_vote: scope.can_vote_in_ballotage?,
       can_oversee: scope.can_oversee_ballotage?,
       can_manage: scope.can_manage_ballotage?,
+      pending: scope.can_vote_in_ballotage? ? Ballotage::Ballot.pending_for(object).count : 0,
     }
   end
 

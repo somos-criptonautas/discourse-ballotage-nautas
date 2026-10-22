@@ -186,6 +186,21 @@ RSpec.describe Ballotage::Ballot do
     end
   end
 
+  describe ".pending_for" do
+    it "counts only open, uncancelled ballots the user hasn't voted in" do
+      pending = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+      voted = build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now)
+      Ballotage::Participation.create!(ballot_id: voted.id, user_id: user.id)
+      build_ballot(starts_at: 1.hour.from_now, ends_at: 2.hours.from_now)
+      build_ballot(starts_at: 2.hours.ago, ends_at: 1.hour.ago)
+      build_ballot(starts_at: 1.hour.ago, ends_at: 1.hour.from_now).update!(
+        cancelled_at: Time.zone.now,
+      )
+
+      expect(described_class.pending_for(user)).to contain_exactly(pending)
+    end
+  end
+
   describe "#finalize!" do
     it "wipes counters and participations and sets finalized_at" do
       freeze_time
