@@ -58,6 +58,23 @@ if defined?(DiscourseWorkflows)
             }
           JSON
 
+          # Own copy rather than a Workflows constant: those get renamed between
+          # Discourse versions, and a missing one stops the whole site booting.
+          CANDIDATE_PROPERTIES = {
+            "id" => {
+              "type" => "integer",
+            },
+            "username" => {
+              "type" => "string",
+            },
+            "name" => {
+              "type" => %w[string null],
+            },
+            "avatar_template" => {
+              "type" => "string",
+            },
+          }.freeze
+
           SCHEMA =
             DiscourseWorkflows::Schema.merge(
               DiscourseWorkflows::Schema.entity(
@@ -77,7 +94,7 @@ if defined?(DiscourseWorkflows)
               ),
               DiscourseWorkflows::Schema.entity(
                 "candidate",
-                DiscourseWorkflows::Schema::BASIC_USER_PROPERTIES,
+                CANDIDATE_PROPERTIES,
                 "The member an admission ballot is about; present only when one was picked. " \
                   "Use candidate.username for group or message actions.",
               ),
@@ -97,7 +114,13 @@ if defined?(DiscourseWorkflows)
             {
               ballot: ballot_data(ballot),
               candidate: (serialize_user(ballot.subject_user) if ballot.subject_user),
-              topic: (topic_data(post.topic) if post&.topic),
+              # serialize_record exists across Workflows versions; topic_data was renamed.
+              topic:
+                (
+                  if post&.topic
+                    serialize_record(post.topic, DiscourseWorkflows::TopicListItemSerializer)
+                  end
+                ),
               post: (serialize_post(post) if post),
             }.compact
           end
