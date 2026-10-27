@@ -45,15 +45,18 @@ if defined?(DiscourseWorkflows)
               "closed_eligible_count": { "type": ["integer", "null"] },
               "black_count": {
                 "type": "integer",
-                "description": "Reject votes; only when the ended ballot publishes its counts"
+                "description": "Reject votes; only when the ended ballot publishes its counts",
+                "x-optional": true
               },
               "white_count": {
                 "type": "integer",
-                "description": "Approve votes; only when the ended ballot publishes its counts"
+                "description": "Approve votes; only when the ended ballot publishes its counts",
+                "x-optional": true
               },
               "abstain_count": {
                 "type": "integer",
-                "description": "Only when the ended ballot publishes its counts"
+                "description": "Only when the ended ballot publishes its counts",
+                "x-optional": true
               }
             }
           JSON
@@ -92,14 +95,26 @@ if defined?(DiscourseWorkflows)
                   "only for ballots longer than 24 h; there is no per-vote event. topic and post " \
                   "are present only when the ballot is embedded in a post.",
               ),
-              DiscourseWorkflows::Schema.entity(
-                "candidate",
-                CANDIDATE_PROPERTIES,
-                "The member an admission ballot is about; present only when one was picked. " \
-                  "Use candidate.username for group or message actions.",
+              # Present only when set or embedded; x-optional tells Workflows' schema
+              # checks they may be missing.
+              DiscourseWorkflows::Schema.document(
+                "candidate" => {
+                  "type" => "object",
+                  "description" =>
+                    "The member an admission ballot is about; present only when one was " \
+                      "picked. Use candidate.username for group or message actions.",
+                  "properties" => CANDIDATE_PROPERTIES,
+                  "x-optional" => true,
+                },
+                "topic" =>
+                  DiscourseWorkflows::Schema::TOPIC_LIST_ITEM_SCHEMA["properties"]["topic"].merge(
+                    "x-optional" => true,
+                  ),
+                "post" =>
+                  DiscourseWorkflows::Schema::POST_SCHEMA["properties"]["post"].merge(
+                    "x-optional" => true,
+                  ),
               ),
-              DiscourseWorkflows::Schema::TOPIC_LIST_ITEM_SCHEMA,
-              DiscourseWorkflows::Schema::POST_SCHEMA,
             ).freeze
 
           private
