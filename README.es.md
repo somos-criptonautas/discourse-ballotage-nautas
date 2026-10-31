@@ -58,5 +58,5 @@ grupo de votación (`ballotage_voting_group`) y el de custodios
 (`ballotage_oversight_group`) y, si quieres, una zona horaria fija (`ballotage_timezone`;
 vacía = automática) y la gestión por parte de los custodios (`ballotage_oversight_can_manage`).
 
-Requisito: Discourse 2026.7 o superior. Código: GPL-3.0 ([LICENSE](LICENSE)).
-Este texto: [CC BY-NC-SA 4.0](CC-BY-NC-SA-4.0.txt).
+Requisito: Discourse 2026.7 o superior. Código: GPL-3.0 ([LICENSE](LICENSE)). Obra original de DaniW42; modificaciones de Criptonautas.
+Nuestros agregados a este texto: [CC BY-NC-SA 4.0](CC-BY-NC-SA-4.0.txt); el texto del proyecto original sigue bajo GPL-3.0.
